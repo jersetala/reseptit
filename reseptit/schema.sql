@@ -1,3 +1,8 @@
+-- Local Variables:
+-- sql-product: sqlite
+-- End:
+
+-- Tables
 CREATE TABLE IF NOT EXISTS users (
        user_id INTEGER PRIMARY KEY AUTOINCREMENT,
        username TEXT NOT NULL UNIQUE CHECK(length(username) <= 32),
@@ -32,6 +37,7 @@ CREATE TABLE IF NOT EXISTS comment_votes (
        UNIQUE (comment_id, user_id)
 );
 
+-- Triggers
 CREATE TRIGGER IF NOT EXISTS comment_vote_insert
 AFTER INSERT ON comment_votes
 BEGIN
