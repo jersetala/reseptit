@@ -27,17 +27,23 @@ def get_comments(recipe_id: int):
              AND u.user_id = c.user_id"""
     return db.query(sql, [recipe_id])
 
-def __add_to_recipe_score(recipe_id: int, amount: int):
-    sql = """UPDATE recipes
-             SET score = score + ?
-             WHERE recipe_id = ?"""
-    db.execute(sql, [amount, recipe_id])
+def add_comment_vote(comment_id: int, user_id: int, vote_type: str):
+    if vote_type not in ['upvote', 'downvote']:
+        raise ValueError
 
-def like_recipe(recipe_id):
-    return __add_to_recipe_score(recipe_id, 1)
+    # What this does is add a vote to the database according to the following rules:
+    # 1. If a vote does not exist for that user to that comment, add it.
+    # 2. If a vote exists, and the requested vote_type is the same as that, do nothing.
+    # 3. If a vote exists, and the requested vote_type is opposite, flip it.
+    # The scores are recalculated using sqlite triggers.
+    sql = """INSERT INTO comment_votes (comment_id, user_id, vote_type)
+             VALUES (?, ?, ?)
+             ON CONFLICT (comment_id, user_id)
+             DO UPDATE SET
+                 vote_type = excluded.vote_type
+             WHERE comment_votes.vote_type != excluded.vote_type"""
 
-def dislike_recipe(recipe_id):
-    return __add_to_recipe_score(recipe_id, -1)
+    db.execute(sql, [comment_id, user_id, vote_type])
 
 def add_comment(recipe_id: int, user_id: int, content: str):
     sql = """INSERT INTO comments (recipe_id, user_id, content, creation_date, last_modified, score)

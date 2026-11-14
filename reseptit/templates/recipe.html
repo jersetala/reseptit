@@ -19,6 +19,10 @@
                 <form action="/delete_comment/{{ comment.comment_id }}" method="post">
                     <button name="delete">Delete</button>
                 </form>
+                <form action="/vote_comment/{{ comment.comment_id }}" method="post">
+                    <button name="vote" value="upvote">Upvote</button>
+                    <button name="vote" value="downvote">Downvote</button>
+                </form>
             </p>
         {% endif %}
         <hr />

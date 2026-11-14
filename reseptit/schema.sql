@@ -21,5 +21,53 @@ CREATE TABLE IF NOT EXISTS comments (
        content TEXT NOT NULL,
        creation_date TIMESTAMP NOT NULL,
        last_modified TIMESTAMP NOT NULL,
-       score INTEGER
+       score INTEGER NOT NULL DEFAULT 0
 );
+
+CREATE TABLE IF NOT EXISTS comment_votes (
+       vote_id INTEGER PRIMARY KEY AUTOINCREMENT,
+       comment_id INTEGER REFERENCES comments(comment_id),
+       user_id INTEGER REFERENCES users(user_id),
+       vote_type TEXT CHECK (vote_type in ('upvote', 'downvote')),
+       UNIQUE (comment_id, user_id)
+);
+
+CREATE TRIGGER IF NOT EXISTS comment_vote_insert
+AFTER INSERT ON comment_votes
+BEGIN
+    UPDATE comments
+    SET score = score +
+        CASE NEW.vote_type
+             WHEN 'upvote' THEN 1
+             WHEN 'downvote' THEN -1
+        END
+    WHERE comment_id = NEW.comment_id;
+END;
+
+CREATE TRIGGER IF NOT EXISTS comment_vote_update
+AFTER UPDATE OF vote_type ON comment_votes
+BEGIN
+    UPDATE comments
+    SET score = score
+        - CASE OLD.vote_type
+            WHEN 'upvote' THEN 1
+            WHEN 'downvote' THEN -1
+          END
+        + CASE NEW.vote_type
+            WHEN 'upvote' THEN 1
+            WHEN 'downvote' THEN -1
+          END
+    WHERE comment_id = NEW.comment_id;
+END;
+
+CREATE TRIGGER IF NOT EXISTS comment_vote_delete
+AFTER DELETE ON comment_votes
+BEGIN
+    UPDATE comments
+    SET score = score -
+        CASE OLD.vote_type
+             WHEN 'upvote' THEN 1
+             WHEN 'downvote' THEN -1
+        END
+    WHERE comment_id = OLD.comment_id;
+END;
