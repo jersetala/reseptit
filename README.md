@@ -9,5 +9,13 @@
 - Käyttäjä pystyy valitsemaan esimerkiksi seuraavia luokitteluja:
         Ruoan tyyppi: alkuruoka, pääruoka tai jälkiruoka
         Ruokavalio: laktoositon, gluteeniton tai vegaaninen
-- Käyttäjä pystyy antamaan reseptille kommentin ja arvosanan. Reseptistä näytetään kommentit ja keskimääräinen arvosana.
+- Käyttäjä pystyy antamaan reseptille kommentin ja joko positiivisen tai negatiivisen arvosanan. Reseptistä näytetään kommentit ja postitiivisten ja negatiivisten arvosanojen erotus.
+- Kommenteille voi myös antaa samanlaisen arvosanan.
+
+## Mikä tällä hetkellä toimii?
+- Käyttäjä voi luoda tunnuksen ja kirjautumaan sisään.
+- Käyttäjä pystyy lisäämään yksinkertaisia puhtaasti tekstipohjaisia reseptejä ja poistamaan niitä. Reseptit ovat käytännössä tekstikenttiä.
+- Käyttäjä näkee sovellukseen lisätyt reseptit.
+- Käyttäjä pystyy antamaan reseptille kommentin ja joko positiivisen tai negatiivisen arvosanan.
+- Kommenteille voi myös antaa samanlaisen arvosanan.
 
