@@ -16,8 +16,8 @@ CREATE TABLE IF NOT EXISTS recipes (
 
 CREATE TABLE IF NOT EXISTS comments (
        comment_id INTEGER PRIMARY KEY AUTOINCREMENT,
-       recipe_id INTEGER references recipes(recipe_id),
-       user_id INTEGER references users(user_id),
+       recipe_id INTEGER REFERENCES recipes(recipe_id),
+       user_id INTEGER REFERENCES users(user_id),
        content TEXT NOT NULL,
        creation_date TIMESTAMP NOT NULL,
        last_modified TIMESTAMP NOT NULL,
