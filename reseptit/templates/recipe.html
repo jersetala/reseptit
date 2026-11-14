@@ -1,0 +1,39 @@
+{% extends "layout.html" %}
+{% block title %}{{ recipe.title }}{% endblock %}
+{% block body %}
+    <h1>{{ recipe.title }}</h1>
+    <p>
+        {{ recipe.content }}
+    </p>
+    <hr />
+    {% for comment in comments %}
+        <p>
+            {{ comment.username }} ({{ comment.creation_date }})
+        </p>
+        <p>
+            {{ comment.content }}
+        </p>
+        {% if comment.user_id == session.user_id %}
+            <p>
+                <a href="/edit/{{ comment.comment_id }}">Edit</a>|
+                <form action="/delete_comment/{{ comment.comment_id }}" method="post">
+                    <button name="delete">Delete</button>
+                </form>
+            </p>
+        {% endif %}
+        <hr />
+    {% endfor %}
+
+    {% if session.user_id %}
+        <h2>Create comment</h2>
+        <form action="/new_comment" method="post">
+            <p>
+                <label for="content">Comment:</label>
+                <textarea name="content" rows="5" cols="40"></textarea>
+            </p>
+            <input type="hidden" name="recipe_id" value="{{ recipe.recipe_id }}" />
+            <input type="submit" value="Send" />
+        </form>
+        <hr />
+    {% endif %}
+{% endblock %}
