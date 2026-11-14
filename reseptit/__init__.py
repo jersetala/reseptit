@@ -101,13 +101,11 @@ def delete_comment(comment_id: int):
 @app.route('/vote_comment/<int:comment_id>', methods = ['POST'])
 def vote_comment(comment_id: int):
     vote_type = request.form['vote']
-    print(vote_type)
-    print(request.form)
     user_id = session['user_id']
     try:
         recipes.add_comment_vote(comment_id, user_id, vote_type)
     except Exception as e:
-        flash(f"FAILURE: Failed to vote. {e}")
+        flash(f"FAILURE: Failed to vote.")
         return redirect(request.referrer or '/')
 
     return redirect(request.referrer or '/')
