@@ -8,17 +8,22 @@
     <hr />
     {% for comment in comments %}
         <p>
-            {{ comment.username }} ({{ comment.creation_date }})
+            <b>{{ comment.username }}</b> <i>({{ comment.creation_date }})</i>
         </p>
         <p>
             {{ comment.content }}
         </p>
-        {% if comment.user_id == session.user_id %}
+        <p>
+            <i>Score: {{ comment.score }}</i>
+        </p>
+        {% if session.user_id %}
             <p>
-                <a href="/edit/{{ comment.comment_id }}">Edit</a>|
-                <form action="/delete_comment/{{ comment.comment_id }}" method="post">
-                    <button name="delete">Delete</button>
-                </form>
+                {% if comment.user_id == session.user_id %}
+                    <a href="/edit/{{ comment.comment_id }}">Edit</a>
+                    <form action="/delete_comment/{{ comment.comment_id }}" method="post">
+                        <button name="delete">Delete</button>
+                    </form>
+                {% endif %}
                 <form action="/vote_comment/{{ comment.comment_id }}" method="post">
                     <button name="vote" value="upvote">Upvote</button>
                     <button name="vote" value="downvote">Downvote</button>

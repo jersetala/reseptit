@@ -32,7 +32,6 @@ def execute(sql: str, params: list[Any]) -> None:
     result = con.execute(sql, params)
     con.commit()
     g.last_insert_id = result.lastrowid
-    con.close()
 
 @app.teardown_appcontext
 def close_connection(e = None) -> None:
