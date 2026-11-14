@@ -3,8 +3,29 @@
 {% block body %}
     <h1>{{ recipe.title }}</h1>
     <p>
+        <b>{{ recipe.username }}</b>
+        <i>Score: {{ recipe.score }}</i>
+    </p>
+    {% if session.user_id %}
+        <p>
+            {% if recipe.recipe_user == session.user_id %}
+                <a href="/edit_recipe/{{ recipe.recipe_id }}">Edit</a>
+                <form action="/delete_recipe/{{ recipe.recipe_id }}" method="post">
+                    <button name="delete">Delete</button>
+                </form>
+            {% endif %}
+                <form action="/vote_recipe/{{ recipe.recipe_id }}" method="post">
+                    <button name="vote" value="upvote">Upvote</button>
+                    <button name="vote" value="downvote">Downvote</button>
+                </form>
+        </p>
+    {% endif %}
+
+    <h2>Content</h2>
+    <p>
         {{ recipe.content }}
     </p>
+
     <hr />
     {% for comment in comments %}
         <p>

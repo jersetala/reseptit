@@ -58,3 +58,26 @@ def delete_comment(comment_id: int, user_id: int):
 
     sql = """DELETE FROM comments WHERE comment_id = ?"""
     db.execute(sql, [comment_id])
+
+def delete_recipe(recipe_id: int, user_id: int):
+    sql = """SELECT user_id FROM recipes where recipe_id = ?"""
+    recipe_author = db.query(sql, [recipe_id])
+    if user_id != recipe_author:
+        raise ValueError
+
+    sql = """DELETE FROM recipes WHERE recipe_id = ?"""
+    db.execute(sql, [recipe_id])
+
+def add_recipe_vote(recipe_id: int, user_id: int, vote_type: str):
+    # This is one-to-one to add_comment_vote
+    if vote_type not in ['upvote', 'downvote']:
+        raise ValueError
+
+    sql = """INSERT INTO recipe_votes (recipe_id, user_id, vote_type)
+             VALUES (?, ?, ?)
+             ON CONFLICT (recipe_id, user_id)
+             DO UPDATE SET
+                 vote_type = excluded.vote_type
+             WHERE recipe_votes.vote_type != excluded.vote_type"""
+
+    db.execute(sql, [recipe_id, user_id, vote_type])

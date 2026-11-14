@@ -63,7 +63,7 @@ def login():
 def create_recipe():
     content = escape(request.form['content'])
     title = escape(request.form['title'])
-    user_id = session['user_id']
+    user_id = get_user_id()
 
     recipes.add_recipe(content, title, user_id)
     flash("SUCCESS: Recipe created!")
@@ -83,14 +83,14 @@ def new_comment():
         flash('ERROR: Invalid recipe ID.')
         return redirect('/')
     content = escape(request.form['content'])
-    user_id = session['user_id']
+    user_id = get_user_id()
 
     recipes.add_comment(recipe_id, user_id, content)
     return redirect(f"/recipe/{recipe_id}")
 
 @app.route('/delete_comment/<int:comment_id>', methods = ['POST', 'GET'])
 def delete_comment(comment_id: int):
-    user_id = session['user_id']
+    user_id = get_user_id()
     try:
         recipes.delete_comment(comment_id, user_id)
     except:
@@ -101,7 +101,7 @@ def delete_comment(comment_id: int):
 @app.route('/vote_comment/<int:comment_id>', methods = ['POST'])
 def vote_comment(comment_id: int):
     vote_type = request.form['vote']
-    user_id = session['user_id']
+    user_id = get_user_id()
     try:
         recipes.add_comment_vote(comment_id, user_id, vote_type)
     except Exception as e:
@@ -109,3 +109,30 @@ def vote_comment(comment_id: int):
         return redirect(request.referrer or '/')
 
     return redirect(request.referrer or '/')
+
+@app.route('/delete_recipe/<int:recipe_id>')
+def deete_recipe(recipe_id: int):
+    user_id = get_user_id()
+    try:
+        recipes.delete_recipe(recipe_id, user_id)
+    except:
+        flash('FAILURE: Failed to vote.')
+        return redirect(request.referrer or '/')
+
+    flash('SUCCESS: Recipe deleted')
+    return redirect('/')
+
+@app.route('/vote_recipe/<int:recipe_id>', methods = ['POST'])
+def vote_recipe(recipe_id: int):
+    vote_type = request.form['vote']
+    user_id = get_user_id()
+    try:
+        recipes.add_recipe_vote(recipe_id, user_id, vote_type)
+    except Exception as e:
+        flash(f"FAILURE: Failed to vote.")
+        return redirect(request.referrer or '/')
+
+    return redirect(request.referrer or '/')
+
+def get_user_id() -> int:
+    return session['user_id']

@@ -19,6 +19,14 @@ CREATE TABLE IF NOT EXISTS recipes (
        score INTEGER
 );
 
+CREATE TABLE IF NOT EXISTS recipe_votes (
+       vote_id INTEGER PRIMARY KEY AUTOINCREMENT,
+       recipe_id INTEGER REFERENCES recipes(recipe_id),
+       user_id INTEGER REFERENCES users(user_id),
+       vote_type TEXT CHECK (vote_type in ('upvote', 'downvote')),
+       UNIQUE (recipe_id, user_id)
+);
+
 CREATE TABLE IF NOT EXISTS comments (
        comment_id INTEGER PRIMARY KEY AUTOINCREMENT,
        recipe_id INTEGER REFERENCES recipes(recipe_id),
@@ -76,4 +84,44 @@ BEGIN
              WHEN 'downvote' THEN -1
         END
     WHERE comment_id = OLD.comment_id;
+END;
+
+CREATE TRIGGER IF NOT EXISTS recipe_vote_insert
+AFTER INSERT ON recipe_votes
+BEGIN
+    UPDATE recipes
+    SET score = score +
+        CASE NEW.vote_type
+             WHEN 'upvote' THEN 1
+             WHEN 'downvote' THEN -1
+        END
+    WHERE recipe_id = NEW.recipe_id;
+END;
+
+CREATE TRIGGER IF NOT EXISTS recipe_vote_update
+AFTER UPDATE OF vote_type ON recipe_votes
+BEGIN
+    UPDATE recipes
+    SET score = score
+        - CASE OLD.vote_type
+            WHEN 'upvote' THEN 1
+            WHEN 'downvote' THEN -1
+          END
+        + CASE NEW.vote_type
+            WHEN 'upvote' THEN 1
+            WHEN 'downvote' THEN -1
+          END
+    WHERE recipe_id = NEW.recipe_id;
+END;
+
+CREATE TRIGGER IF NOT EXISTS recipe_vote_delete
+AFTER DELETE ON recipe_votes
+BEGIN
+    UPDATE recipes
+    SET score = score -
+        CASE OLD.vote_type
+             WHEN 'upvote' THEN 1
+             WHEN 'downvote' THEN -1
+        END
+    WHERE recipe_id = OLD.recipe_id;
 END;
