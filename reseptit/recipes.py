@@ -27,6 +27,13 @@ def get_comments(recipe_id: int):
              AND u.user_id = c.user_id"""
     return db.query(sql, [recipe_id])
 
+def get_comment(comment_id: int):
+    sql = """SELECT c.comment_id, c.recipe_id, c.user_id, c.content, c.creation_date, c.last_modified, c.score, u.username
+             FROM comments c, users u
+             WHERE comment_id = ?
+             AND u.user_id = c.user_id"""
+    return db.query(sql, [comment_id])[0]
+
 def add_comment_vote(comment_id: int, user_id: int, vote_type: str):
     if vote_type not in ['upvote', 'downvote']:
         raise ValueError
@@ -51,20 +58,12 @@ def add_comment(recipe_id: int, user_id: int, content: str):
     db.execute(sql, [recipe_id, user_id, content])
 
 def delete_comment(comment_id: int, user_id: int):
-    sql = """SELECT user_id FROM comments where comment_id = ?"""
-    comment_author = db.query(sql, [comment_id])[0][0]
-    if user_id != comment_author:
-        raise ValueError
-
+    __verify_comment_owner(comment_id, user_id)
     sql = """DELETE FROM comments WHERE comment_id = ?"""
     db.execute(sql, [comment_id])
 
 def delete_recipe(recipe_id: int, user_id: int):
-    sql = """SELECT user_id FROM recipes where recipe_id = ?"""
-    recipe_author = db.query(sql, [recipe_id])
-    if user_id != recipe_author:
-        raise ValueError
-
+    __verify_recipe_owner(recipe_id, user_id)
     sql = """DELETE FROM recipes WHERE recipe_id = ?"""
     db.execute(sql, [recipe_id])
 
@@ -81,3 +80,29 @@ def add_recipe_vote(recipe_id: int, user_id: int, vote_type: str):
              WHERE recipe_votes.vote_type != excluded.vote_type"""
 
     db.execute(sql, [recipe_id, user_id, vote_type])
+
+def edit_comment(comment_id: int, user_id: int, content: str):
+    __verify_comment_owner(comment_id, user_id)
+    sql = """UPDATE comments
+             SET content = ?
+             WHERE comment_id = ?"""
+    db.execute(sql, [content, comment_id])
+
+def edit_recipe(recipe_id: int, user_id: int, content: str, title: str):
+    __verify_recipe_owner(recipe_id, user_id)
+    sql = """UPDATE recipes
+             SET content = ?, title = ?
+             WHERE recipe_id = ?"""
+    db.execute(sql, [content, title, recipe_id])
+
+def __verify_comment_owner(comment_id: int, user_id: int):
+    sql = """SELECT user_id FROM comments where comment_id = ?"""
+    comment_author = db.query(sql, [comment_id])[0][0]
+    if user_id != comment_author:
+        raise ValueError
+
+def __verify_recipe_owner(recipe_id: int, user_id: int):
+    sql = """SELECT user_id FROM recipes where recipe_id = ?"""
+    recipe_author = db.query(sql, [recipe_id])
+    if user_id != recipe_author:
+        raise ValueError

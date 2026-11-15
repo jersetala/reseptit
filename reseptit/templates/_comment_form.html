@@ -1,0 +1,9 @@
+{% macro comment_form(action, submit_text, recipe_id, content='') %}
+    <form method="post" action="{{ action }}">
+        <textarea name="content" required rows="5" cols="40">{{ content }}</textarea>
+        <input type="hidden" name="recipe_id" value="{{ recipe_id }}">
+        <button type="submit">
+            {{ submit_text }}
+        </button>
+    </form>
+{% endmacro %}

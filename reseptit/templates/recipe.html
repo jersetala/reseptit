@@ -40,7 +40,7 @@
         {% if session.user_id %}
             <p>
                 {% if comment.user_id == session.user_id %}
-                    <a href="/edit/{{ comment.comment_id }}">Edit</a>
+                    <a href="/edit_comment/{{ comment.comment_id }}">Edit</a>
                     <form action="/delete_comment/{{ comment.comment_id }}" method="post">
                         <button name="delete">Delete</button>
                     </form>
@@ -55,15 +55,9 @@
     {% endfor %}
 
     {% if session.user_id %}
-        <h2>Create comment</h2>
-        <form action="/new_comment" method="post">
-            <p>
-                <label for="content">Comment:</label>
-                <textarea name="content" rows="5" cols="40"></textarea>
-            </p>
-            <input type="hidden" name="recipe_id" value="{{ recipe.recipe_id }}" />
-            <input type="submit" value="Send" />
-        </form>
+        <h2>Make comment</h2>
+        {% from "_comment_form.html" import comment_form %}
+        {{ comment_form("/new_comment", "Send", recipe.recipe_id, '') }}
         <hr />
     {% endif %}
 {% endblock %}

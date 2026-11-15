@@ -88,7 +88,7 @@ def new_comment():
     recipes.add_comment(recipe_id, user_id, content)
     return redirect(f"/recipe/{recipe_id}")
 
-@app.route('/delete_comment/<int:comment_id>', methods = ['POST', 'GET'])
+@app.route('/delete_comment/<int:comment_id>', methods = ['POST'])
 def delete_comment(comment_id: int):
     user_id = get_user_id()
     try:
@@ -133,6 +133,23 @@ def vote_recipe(recipe_id: int):
         return redirect(request.referrer or '/')
 
     return redirect(request.referrer or '/')
+
+@app.route('/edit_comment/<int:comment_id>', methods = ['GET', 'POST'])
+def edit_comment(comment_id: int):
+    comment = recipes.get_comment(comment_id)
+    if request.method == 'GET':
+        print()
+        return render_template('edit_comment.html', comment=comment)
+    user_id = get_user_id()
+    content = request.form['content']
+    try:
+        recipes.edit_comment(comment_id, user_id, content)
+    except:
+        flash("FAILURE: Failed to edit comment!")
+
+    comment_recipe = comment['recipe_id']
+    return redirect(f"/recipe/{comment_recipe}")
+
 
 def get_user_id() -> int:
     return session['user_id']
