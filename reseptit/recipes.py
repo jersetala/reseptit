@@ -15,9 +15,11 @@ def get_all_recipes():
     return db.query(sql)
 
 def get_recipe(recipe_id: int):
-    sql = 'SELECT recipe_id, recipe_user, title, content, creation_date, score FROM recipes WHERE recipe_id = ?'
-    item = db.query(sql, [recipe_id])[0]
-    print(item['recipe_id'])
+    sql = """SELECT r.recipe_id, r.title, u.username, r.score, r.creation_date, r.content, u.username, r.recipe_user
+             FROM recipes r, users u
+             WHERE r.recipe_user = u.user_id
+             AND r.recipe_id = ?"""
+
     return db.query(sql, [recipe_id])[0]
 
 def get_comments(recipe_id: int):

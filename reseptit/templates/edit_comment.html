@@ -1,7 +1,6 @@
 {% extends "layout.html" %}
 {% block body %}
     <h2>Edit comment</h2>
-    <p>{{ comment.comment_id }}</p>
     {% from "_comment_form.html" import comment_form %}
     {{ comment_form("/edit_comment/" + comment.comment_id | string(), "Publish edit", 0, comment.content) }}
 {% endblock %}

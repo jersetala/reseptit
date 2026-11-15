@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+from functools import wraps
 from glob import escape
 import datetime
 from flask import Flask, render_template, request, flash, redirect, g, session
@@ -13,6 +14,16 @@ from markupsafe import escape
 
 app = Flask(__name__)
 app.secret_key = config.secret_key
+
+def require_login(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if session.get('user_id') is None:
+            flash("FAILURE: Login required!")
+            return redirect('/')
+        return f(*args, **kwargs)
+    return decorated_function
+
 
 @app.route('/')
 def index():
@@ -60,6 +71,7 @@ def login():
     return redirect('/')
 
 @app.route('/create_recipe', methods = ['POST'])
+@require_login
 def create_recipe():
     content = escape(request.form['content'])
     title = escape(request.form['title'])
@@ -70,12 +82,14 @@ def create_recipe():
     return redirect('/')
 
 @app.route('/logout')
+@require_login
 def logout():
     session.pop('username', None)
     session.pop('user_id', None)
     return redirect('/')
 
 @app.route('/new_comment', methods = ['POST'])
+@require_login
 def new_comment():
     try:
         recipe_id = int(request.form['recipe_id'])
@@ -89,6 +103,7 @@ def new_comment():
     return redirect(f"/recipe/{recipe_id}")
 
 @app.route('/delete_comment/<int:comment_id>', methods = ['POST'])
+@require_login
 def delete_comment(comment_id: int):
     user_id = get_user_id()
     try:
@@ -99,6 +114,7 @@ def delete_comment(comment_id: int):
     return redirect(request.referrer or '/')
 
 @app.route('/vote_comment/<int:comment_id>', methods = ['POST'])
+@require_login
 def vote_comment(comment_id: int):
     vote_type = request.form['vote']
     user_id = get_user_id()
@@ -111,7 +127,8 @@ def vote_comment(comment_id: int):
     return redirect(request.referrer or '/')
 
 @app.route('/delete_recipe/<int:recipe_id>')
-def deete_recipe(recipe_id: int):
+@require_login
+def delete_recipe(recipe_id: int):
     user_id = get_user_id()
     try:
         recipes.delete_recipe(recipe_id, user_id)
@@ -123,6 +140,7 @@ def deete_recipe(recipe_id: int):
     return redirect('/')
 
 @app.route('/vote_recipe/<int:recipe_id>', methods = ['POST'])
+@require_login
 def vote_recipe(recipe_id: int):
     vote_type = request.form['vote']
     user_id = get_user_id()
@@ -135,10 +153,10 @@ def vote_recipe(recipe_id: int):
     return redirect(request.referrer or '/')
 
 @app.route('/edit_comment/<int:comment_id>', methods = ['GET', 'POST'])
+@require_login
 def edit_comment(comment_id: int):
     comment = recipes.get_comment(comment_id)
     if request.method == 'GET':
-        print()
         return render_template('edit_comment.html', comment=comment)
     user_id = get_user_id()
     content = request.form['content']
@@ -150,6 +168,22 @@ def edit_comment(comment_id: int):
     comment_recipe = comment['recipe_id']
     return redirect(f"/recipe/{comment_recipe}")
 
+@app.route('/edit_recipe/<int:recipe_id>', methods = ['GET', 'POST'])
+@require_login
+def edit_recipe(recipe_id: int):
+    recipe = recipes.get_recipe(recipe_id)
+    if request.method == 'GET':
+        return render_template('edit_recipe.html', recipe=recipe)
+    user_id = get_user_id()
+    content = request.form['content']
+    title = request.form['title']
+    try:
+        recipes.edit_recipe(recipe_id, user_id, content, title)
+    except:
+        flash("FAILURE: Failed to edit comment!")
+
+    return redirect(request.referrer or f"/recipe/{recipe_id}")
+
 
 def get_user_id() -> int:
-    return session['user_id']
+    return session.get('user_id')

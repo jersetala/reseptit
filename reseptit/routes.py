@@ -4,7 +4,6 @@ from sqlite3 import IntegrityError
 from werkzeug.security import generate_password_hash
 from flask import render_template, request, flash, redirect
 import reseptit.db as db
-from reseptit import app
 
 @app.route('/register')
 def register():
