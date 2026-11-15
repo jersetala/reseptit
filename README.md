@@ -18,6 +18,8 @@
 - Käyttäjä näkee sovellukseen lisätyt reseptit.
 - Käyttäjä pystyy antamaan reseptille kommentin ja joko positiivisen tai negatiivisen arvosanan.
 - Kommenteille voi myös antaa samanlaisen arvosanan.
+- Käyttäjä pystyy muokkaamaan ja poistamaan luomiaan kohteita.
+- Käyttäjä pystyy hakemaan reseptejä otsikon perusteella.
 
 # Sovelluksen käyttö
 
