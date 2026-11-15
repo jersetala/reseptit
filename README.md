@@ -19,3 +19,16 @@
 - Käyttäjä pystyy antamaan reseptille kommentin ja joko positiivisen tai negatiivisen arvosanan.
 - Kommenteille voi myös antaa samanlaisen arvosanan.
 
+# Sovelluksen käyttö
+
+Ei-juurikäyttäjällä:
+``` sh
+git clone git@github.com:jersetala/reseptit
+cd reseptit
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+flask --app reseptit run
+```
+
+Sovellus luo tietokannan projektin juurikansioon automaattisesti kohteeseen `database.db`.
