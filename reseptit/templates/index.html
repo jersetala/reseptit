@@ -29,13 +29,9 @@
     </p>
     <hr />
 
+    {% from "_recipe_render.html" import display_recipe %}
     {% for recipe in recipes %}
-        <p>
-            <a href="/recipe/{{ recipe.recipe_id }}">{{ recipe.title }}</a>
-            <br />
-            Score: {{ recipe.score }}, created on {{ recipe.creation_date }}
-        </p>
-    <hr />
+        {{ display_recipe(recipe) }}
     {% endfor %}
 
     {% if session.user_id %}

@@ -184,6 +184,12 @@ def edit_recipe(recipe_id: int):
 
     return redirect(request.referrer or f"/recipe/{recipe_id}")
 
+@app.route('/search', methods = ['GET'])
+def search():
+    # will abort() if doesn't exist
+    query = request.args['q']
+    results = recipes.search_recipe(query)
+    return render_template("search.html", recipes=results)
 
 def get_user_id() -> int:
     return session.get('user_id')

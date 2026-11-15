@@ -1,0 +1,12 @@
+{% extends "layout.html" %}
+{% block body %}
+    {% if recipes %}
+        <h1>Results</h1>
+        {% from "_recipe_render.html" import display_recipe %}
+        {% for recipe in recipes %}
+            {{ display_recipe(recipe) }}
+        {% endfor %}
+    {% else %}
+        <h1>No results :(</h1>
+    {% endif %}
+{% endblock %}

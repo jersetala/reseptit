@@ -97,6 +97,13 @@ def edit_recipe(recipe_id: int, user_id: int, content: str, title: str):
              WHERE recipe_id = ?"""
     db.execute(sql, [content, title, recipe_id])
 
+def search_recipe(query: str):
+    sql = """SELECT * FROM recipes
+             WHERE title LIKE ?"""
+
+    # This looks wrong but does not lead to SQL injection.
+    return db.query(sql, ['%' + query + '%'])
+
 def __verify_comment_owner(comment_id: int, user_id: int):
     sql = """SELECT user_id FROM comments where comment_id = ?"""
     comment_author = db.query(sql, [comment_id])[0][0]
