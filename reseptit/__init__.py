@@ -137,14 +137,14 @@ def vote_comment(comment_id: int):
     return redirect(request.referrer or "/")
 
 
-@app.route("/delete_recipe/<int:recipe_id>")
+@app.route("/delete_recipe/<int:recipe_id>", methods=["POST"])
 @require_login
 def delete_recipe(recipe_id: int):
     user_id = get_user_id()
     try:
         recipes.delete_recipe(recipe_id, user_id)
     except:
-        flash("FAILURE: Failed to vote.")
+        flash("FAILURE: Failed to delete recipe.")
         return redirect(request.referrer or "/")
 
     flash("SUCCESS: Recipe deleted")

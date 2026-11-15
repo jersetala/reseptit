@@ -18,7 +18,8 @@ def get_all_recipes():
 
 
 def get_recipe(recipe_id: int):
-    sql = """SELECT r.recipe_id, r.title, u.username, r.score, r.creation_date, r.content, u.username, r.recipe_user
+    sql = """SELECT r.recipe_id, r.title, u.username, r.score, r.creation_date,
+                r.content, u.username, r.recipe_user
              FROM recipes r, users u
              WHERE r.recipe_user = u.user_id
              AND r.recipe_id = ?"""
@@ -27,7 +28,8 @@ def get_recipe(recipe_id: int):
 
 
 def get_comments(recipe_id: int):
-    sql = """SELECT c.comment_id, c.recipe_id, c.user_id, c.content, c.creation_date, c.last_modified, c.score, u.username
+    sql = """SELECT c.comment_id, c.recipe_id, c.user_id, c.content,
+                c.creation_date, c.last_modified, c.score, u.username
              FROM comments c, users u
              WHERE recipe_id = ?
              AND u.user_id = c.user_id"""
@@ -35,7 +37,8 @@ def get_comments(recipe_id: int):
 
 
 def get_comment(comment_id: int):
-    sql = """SELECT c.comment_id, c.recipe_id, c.user_id, c.content, c.creation_date, c.last_modified, c.score, u.username
+    sql = """SELECT c.comment_id, c.recipe_id, c.user_id, c.content,
+                c.creation_date, c.last_modified, c.score, u.username
              FROM comments c, users u
              WHERE comment_id = ?
              AND u.user_id = c.user_id"""
@@ -62,7 +65,9 @@ def add_comment_vote(comment_id: int, user_id: int, vote_type: str):
 
 
 def add_comment(recipe_id: int, user_id: int, content: str):
-    sql = """INSERT INTO comments (recipe_id, user_id, content, creation_date, last_modified, score)
+    sql = """INSERT INTO comments (
+                recipe_id, user_id, content, creation_date, last_modified, score
+             )
              VALUES (?, ?, ?, datetime('now'), datetime('now'), 0)"""
     db.execute(sql, [recipe_id, user_id, content])
 
@@ -76,6 +81,8 @@ def delete_comment(comment_id: int, user_id: int):
 def delete_recipe(recipe_id: int, user_id: int):
     __verify_recipe_owner(recipe_id, user_id)
     sql = """DELETE FROM recipes WHERE recipe_id = ?"""
+    print(recipe_id)
+    print(user_id)
     db.execute(sql, [recipe_id])
 
 
@@ -126,7 +133,8 @@ def __verify_comment_owner(comment_id: int, user_id: int):
 
 
 def __verify_recipe_owner(recipe_id: int, user_id: int):
-    sql = """SELECT user_id FROM recipes where recipe_id = ?"""
-    recipe_author = db.query(sql, [recipe_id])
+    sql = """SELECT recipe_user FROM recipes WHERE recipe_id = ?"""
+    breakpoint()
+    recipe_author = db.query(sql, [recipe_id])[0][0]
     if user_id != recipe_author:
         raise ValueError
