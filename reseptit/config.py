@@ -1,3 +1,3 @@
 #!/usr/bin/env python3
 
-secret_key = 'DEV'
+secret_key = "DEV"
