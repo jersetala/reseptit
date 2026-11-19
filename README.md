@@ -25,12 +25,16 @@
 
 Ei-juurikäyttäjällä:
 ``` sh
+# Kloonaa repositorio
 git clone git@github.com:jersetala/reseptit
 cd reseptit
+# Luo virtuaaliympäristö ja aktivoi se
 python -m venv .venv
 source .venv/bin/activate
-pip install -r requirements.txt
-flask --app reseptit run
+# Asenna flask
+pip install flask
+# Luo tietokanta
+sqlite3 database.db < schema.sql
+# Käynnistä sovellus
+flask run
 ```
-
-Sovellus luo tietokannan projektin juurikansioon automaattisesti kohteeseen `database.db`.

@@ -13,19 +13,9 @@ def get_connection() -> Connection:
     if "DATABASE" in g:
         return g.get("DATABASE")
 
-    try:
-        f = open("database.db", "r")
-        f.close()
-    except FileNotFoundError:
-        print("Database not found. Creating tables...")
-
     con = sqlite3.connect("database.db")
     con.execute("PRAGMA foreign_keys = ON")
     con.row_factory = sqlite3.Row
-    with open("schema.sql", "r") as f:
-        sql = f.read()
-
-    con.executescript(sql)
     return con
 
 

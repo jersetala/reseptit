@@ -16,6 +16,16 @@ from markupsafe import escape
 app = Flask(__name__)
 app.secret_key = secret_key
 
+# Test if database exists.
+try:
+    f = open("database.db", "r")
+    f.close()
+except FileNotFoundError as e:
+    print(f"Database not found. Create a database at {e.filename}")
+    print(f"You can do this by running in console:")
+    print(f"sqlite3 {e.filename} < schema.sql")
+    quit()
+
 
 def require_login(f):
     @wraps(f)
