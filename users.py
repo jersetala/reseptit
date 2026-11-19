@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from werkzeug.security import generate_password_hash, check_password_hash
-from reseptit import db
+import db
 
 DUMMY_HASH = generate_password_hash("0")
 

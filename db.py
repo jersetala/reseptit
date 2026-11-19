@@ -22,7 +22,7 @@ def get_connection() -> Connection:
     con = sqlite3.connect("database.db")
     con.execute("PRAGMA foreign_keys = ON")
     con.row_factory = sqlite3.Row
-    with open("reseptit/schema.sql", "r") as f:
+    with open("schema.sql", "r") as f:
         sql = f.read()
 
     con.executescript(sql)

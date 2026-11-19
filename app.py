@@ -4,16 +4,17 @@ from functools import wraps
 from glob import escape
 import datetime
 from flask import Flask, render_template, request, flash, redirect, g, session
-from reseptit.config import secret_key
+from config import secret_key
 from sqlite3 import IntegrityError
 from werkzeug.security import generate_password_hash, check_password_hash
-import reseptit.db as db
-from reseptit.recipes import add_recipe, get_all_recipes
-from reseptit.users import create_user, check_login
+import db
+import recipes
+from recipes import add_recipe, get_all_recipes
+from users import create_user, check_login
 from markupsafe import escape
 
 app = Flask(__name__)
-app.secret_key = config.secret_key
+app.secret_key = secret_key
 
 
 def require_login(f):
