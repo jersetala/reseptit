@@ -6,8 +6,6 @@ from flask import g, Flask
 import sqlite3
 from sqlite3 import Connection
 
-app = Flask(__name__)
-
 
 def get_connection() -> Connection:
     if "DATABASE" not in g:
@@ -26,12 +24,13 @@ def execute(sql: str, params: list[Any]) -> None:
     g.last_insert_id = result.lastrowid
 
 
-@app.teardown_appcontext
-def close_connection(e=None) -> None:
-    con = g.pop("DATABASE", None)
+def init_app(app):
+    @app.teardown_appcontext
+    def close_connection(e=None) -> None:
+        con = g.pop("DATABASE", None)
 
-    if con is not None:
-        con.close()
+        if con is not None:
+            con.close()
 
 
 def last_insert_id():

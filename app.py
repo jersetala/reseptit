@@ -27,6 +27,7 @@ except FileNotFoundError as e:
     print(f"sqlite3 {e.filename} < schema.sql")
     quit()
 
+db.init_app(app)
 
 def require_login(f):
     @wraps(f)
