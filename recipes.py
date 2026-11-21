@@ -1,12 +1,18 @@
 #!/usr/bin/env python3
 
+from typing import Any
+from sqlite3 import IntegrityError
 import db
+from exceptions import UserInputError, AccessControlError
 
 
 def add_recipe(content: str, title: str, user_id: int):
     sql = """INSERT INTO recipes (user_id, title, content, creation_date, last_modified, score)
              VALUES (?, ?, ?, datetime('now'), datetime('now'), 0)"""
-    db.execute(sql, [user_id, title, content])
+    try:
+        db.execute(sql, [user_id, title, content])
+    except:
+        raise UserInputError
 
 
 def get_all_recipes():
@@ -24,7 +30,10 @@ def get_recipe(recipe_id: int):
              WHERE r.user_id = u.user_id
              AND r.recipe_id = ?"""
 
-    return db.query(sql, [recipe_id])[0]
+    try:
+        return db.query(sql, [recipe_id])[0]
+    except:
+        raise UserInputError
 
 
 def get_comments(recipe_id: int):
@@ -33,7 +42,10 @@ def get_comments(recipe_id: int):
              FROM comments c, users u
              WHERE recipe_id = ?
              AND u.user_id = c.user_id"""
-    return db.query(sql, [recipe_id])
+    try:
+        return db.query(sql, [recipe_id])
+    except:
+        raise UserInputError
 
 
 def get_comment(comment_id: int):
@@ -42,12 +54,15 @@ def get_comment(comment_id: int):
              FROM comments c, users u
              WHERE comment_id = ?
              AND u.user_id = c.user_id"""
-    return db.query(sql, [comment_id])[0]
+    try:
+        return db.query(sql, [comment_id])[0]
+    except:
+        raise UserInputError
 
 
 def add_comment_vote(comment_id: int, user_id: int, vote_type: str):
     if vote_type not in ["upvote", "downvote"]:
-        raise ValueError
+        raise UserInputError
 
     # What this does is add a vote to the database according to the following rules:
     # 1. If a vote does not exist for that user to that comment, add it.
@@ -61,7 +76,10 @@ def add_comment_vote(comment_id: int, user_id: int, vote_type: str):
                  vote_type = excluded.vote_type
              WHERE comment_votes.vote_type != excluded.vote_type"""
 
-    db.execute(sql, [comment_id, user_id, vote_type])
+    try:
+        db.execute(sql, [comment_id, user_id, vote_type])
+    except IntegrityError:
+        raise UserInputError
 
 
 def add_comment(recipe_id: int, user_id: int, content: str):
@@ -69,27 +87,34 @@ def add_comment(recipe_id: int, user_id: int, content: str):
                 recipe_id, user_id, content, creation_date, last_modified, score
              )
              VALUES (?, ?, ?, datetime('now'), datetime('now'), 0)"""
-    db.execute(sql, [recipe_id, user_id, content])
+    try:
+        db.execute(sql, [recipe_id, user_id, content])
+    except:
+        raise UserInputError
 
 
 def delete_comment(comment_id: int, user_id: int):
     __verify_comment_owner(comment_id, user_id)
     sql = """DELETE FROM comments WHERE comment_id = ?"""
-    db.execute(sql, [comment_id])
+    try:
+        db.execute(sql, [comment_id])
+    except:
+        raise UserInputError
 
 
 def delete_recipe(recipe_id: int, user_id: int):
     __verify_recipe_owner(recipe_id, user_id)
     sql = """DELETE FROM recipes WHERE recipe_id = ?"""
-    print(recipe_id)
-    print(user_id)
-    db.execute(sql, [recipe_id])
+    try:
+        db.execute(sql, [recipe_id])
+    except:
+        raise UserInputError
 
 
 def add_recipe_vote(recipe_id: int, user_id: int, vote_type: str):
     # This is one-to-one to add_comment_vote
     if vote_type not in ["upvote", "downvote"]:
-        raise ValueError
+        raise UserInputError
 
     sql = """INSERT INTO recipe_votes (recipe_id, user_id, vote_type)
              VALUES (?, ?, ?)
@@ -98,7 +123,10 @@ def add_recipe_vote(recipe_id: int, user_id: int, vote_type: str):
                  vote_type = excluded.vote_type
              WHERE recipe_votes.vote_type != excluded.vote_type"""
 
-    db.execute(sql, [recipe_id, user_id, vote_type])
+    try:
+        db.execute(sql, [recipe_id, user_id, vote_type])
+    except IntegrityError:
+        raise UserInputError
 
 
 def edit_comment(comment_id: int, user_id: int, content: str):
@@ -106,7 +134,10 @@ def edit_comment(comment_id: int, user_id: int, content: str):
     sql = """UPDATE comments
              SET content = ?
              WHERE comment_id = ?"""
-    db.execute(sql, [content, comment_id])
+    try:
+        db.execute(sql, [content, comment_id, user_id])
+    except:
+        raise UserInputError
 
 
 def edit_recipe(recipe_id: int, user_id: int, content: str, title: str):
@@ -129,11 +160,11 @@ def __verify_comment_owner(comment_id: int, user_id: int):
     sql = """SELECT user_id FROM comments where comment_id = ?"""
     comment_author = db.query(sql, [comment_id])[0][0]
     if user_id != comment_author:
-        raise ValueError
+        raise AccessControlError
 
 
 def __verify_recipe_owner(recipe_id: int, user_id: int):
     sql = """SELECT user_id FROM recipes WHERE recipe_id = ?"""
     recipe_author = db.query(sql, [recipe_id])[0][0]
     if user_id != recipe_author:
-        raise ValueError
+        raise AccessControlError

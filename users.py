@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+from exceptions import UserInputError
+from sqlite3 import IntegrityError
 from werkzeug.security import generate_password_hash, check_password_hash
 import db
 
@@ -9,7 +11,10 @@ DUMMY_HASH = generate_password_hash("0")
 def create_user(username: str, password: str) -> None:
     password_hash = generate_password_hash(password)
     sql = "INSERT INTO users (username, password_hash) VALUES (?, ?)"
-    db.execute(sql, [username, password_hash])
+    try:
+        db.execute(sql, [username, password_hash])
+    except IntegrityError:
+        raise UserInputError
 
 
 def check_login(username: str, password: str) -> int | None:

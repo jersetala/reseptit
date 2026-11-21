@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+from exceptions import UserInputError, AccessControlError
 from functools import wraps
 from glob import escape
 import datetime
@@ -63,7 +64,7 @@ def register():
 
     try:
         create_user(username, password1)
-    except IntegrityError:
+    except UserInputError:
         flash("FAILURE: Username is taken!")
         return redirect("/register")
 
@@ -128,6 +129,8 @@ def delete_comment(comment_id: int):
     user_id = get_user_id()
     try:
         recipes.delete_comment(comment_id, user_id)
+    except AccessControlError:
+        flash("FAILURE: No access.")
     except:
         flash("FAILURE: Failed to remove comment!")
         return redirect("/")
@@ -141,7 +144,7 @@ def vote_comment(comment_id: int):
     user_id = get_user_id()
     try:
         recipes.add_comment_vote(comment_id, user_id, vote_type)
-    except Exception as e:
+    except:
         flash("FAILURE: Failed to vote.")
         return redirect(request.referrer or "/")
 
@@ -154,11 +157,13 @@ def delete_recipe(recipe_id: int):
     user_id = get_user_id()
     try:
         recipes.delete_recipe(recipe_id, user_id)
-    except:
-        flash("FAILURE: Failed to delete recipe.")
+    except AccessControlError:
+        flash("FAILURE: No access.")
         return redirect(request.referrer or "/")
+    except UserInputError:
+        flash("Failure: No such recipe found.")
 
-    flash("SUCCESS: Recipe deleted")
+    flash("SUCCESS: Recipe deleted.")
     return redirect("/")
 
 
@@ -169,7 +174,9 @@ def vote_recipe(recipe_id: int):
     user_id = get_user_id()
     try:
         recipes.add_recipe_vote(recipe_id, user_id, vote_type)
-    except Exception as e:
+    except AccessControlError:
+        flash("FAILURE: No access.")
+    except:
         flash("FAILURE: Failed to vote.")
         return redirect(request.referrer or "/")
 
@@ -186,6 +193,8 @@ def edit_comment(comment_id: int):
     content = request.form["content"]
     try:
         recipes.edit_comment(comment_id, user_id, content)
+    except UserInputError:
+        flash("FAILURE: No access.")
     except:
         flash("FAILURE: Failed to edit comment!")
 
@@ -204,6 +213,8 @@ def edit_recipe(recipe_id: int):
     title = request.form["title"]
     try:
         recipes.edit_recipe(recipe_id, user_id, content, title)
+    except AccessControlError:
+        flash("FAILURE: No access.")
     except:
         flash("FAILURE: Failed to edit comment!")
 
