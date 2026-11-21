@@ -10,13 +10,13 @@ app = Flask(__name__)
 
 
 def get_connection() -> Connection:
-    if "DATABASE" in g:
-        return g.get("DATABASE")
+    if "DATABASE" not in g:
+        con = sqlite3.connect("database.db")
+        con.execute("PRAGMA foreign_keys = ON")
+        con.row_factory = sqlite3.Row
+        g.DATABASE = con
 
-    con = sqlite3.connect("database.db")
-    con.execute("PRAGMA foreign_keys = ON")
-    con.row_factory = sqlite3.Row
-    return con
+    return g.DATABASE
 
 
 def execute(sql: str, params: list[Any]) -> None:
@@ -28,7 +28,10 @@ def execute(sql: str, params: list[Any]) -> None:
 
 @app.teardown_appcontext
 def close_connection(e=None) -> None:
-    return get_connection().close()
+    con = g.pop("DATABASE", None)
+
+    if con is not None:
+        con.close()
 
 
 def last_insert_id():

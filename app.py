@@ -21,8 +21,8 @@ try:
     f = open("database.db", "r")
     f.close()
 except FileNotFoundError as e:
-    print(f"Database not found. Create a database at {e.filename}")
-    print(f"You can do this by running in console:")
+    print("Database not found. Create a database at {e.filename}")
+    print("You can do this by running in console:")
     print(f"sqlite3 {e.filename} < schema.sql")
     quit()
 
@@ -142,7 +142,7 @@ def vote_comment(comment_id: int):
     try:
         recipes.add_comment_vote(comment_id, user_id, vote_type)
     except Exception as e:
-        flash(f"FAILURE: Failed to vote.")
+        flash("FAILURE: Failed to vote.")
         return redirect(request.referrer or "/")
 
     return redirect(request.referrer or "/")
@@ -170,7 +170,7 @@ def vote_recipe(recipe_id: int):
     try:
         recipes.add_recipe_vote(recipe_id, user_id, vote_type)
     except Exception as e:
-        flash(f"FAILURE: Failed to vote.")
+        flash("FAILURE: Failed to vote.")
         return redirect(request.referrer or "/")
 
     return redirect(request.referrer or "/")
