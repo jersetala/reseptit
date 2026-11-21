@@ -4,7 +4,7 @@ import db
 
 
 def add_recipe(content: str, title: str, user_id: int):
-    sql = """INSERT INTO recipes (recipe_user, title, content, creation_date, last_modified, score)
+    sql = """INSERT INTO recipes (user_id, title, content, creation_date, last_modified, score)
              VALUES (?, ?, ?, datetime('now'), datetime('now'), 0)"""
     db.execute(sql, [user_id, title, content])
 
@@ -12,16 +12,16 @@ def add_recipe(content: str, title: str, user_id: int):
 def get_all_recipes():
     sql = """SELECT r.recipe_id, r.title, u.username, r.score, r.creation_date, u.username
              FROM recipes r, users u
-             WHERE r.recipe_user = u.user_id
+             WHERE r.user_id = u.user_id
              ORDER BY r.creation_date"""
     return db.query(sql)
 
 
 def get_recipe(recipe_id: int):
     sql = """SELECT r.recipe_id, r.title, u.username, r.score, r.creation_date,
-                r.content, u.username, r.recipe_user
+                r.content, u.username, r.user_id
              FROM recipes r, users u
-             WHERE r.recipe_user = u.user_id
+             WHERE r.user_id = u.user_id
              AND r.recipe_id = ?"""
 
     return db.query(sql, [recipe_id])[0]
@@ -133,7 +133,7 @@ def __verify_comment_owner(comment_id: int, user_id: int):
 
 
 def __verify_recipe_owner(recipe_id: int, user_id: int):
-    sql = """SELECT recipe_user FROM recipes WHERE recipe_id = ?"""
+    sql = """SELECT user_id FROM recipes WHERE recipe_id = ?"""
     recipe_author = db.query(sql, [recipe_id])[0][0]
     if user_id != recipe_author:
         raise ValueError

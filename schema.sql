@@ -11,37 +11,51 @@ CREATE TABLE IF NOT EXISTS users (
 
 CREATE TABLE IF NOT EXISTS recipes (
        recipe_id INTEGER PRIMARY KEY AUTOINCREMENT,
-       recipe_user INTEGER REFERENCES users(user_id),
+       user_id INTEGER,
        title TEXT NOT NULL,
        content TEXT NOT NULL,
        creation_date TIMESTAMP NOT NULL,
        last_modified TIMESTAMP NOT NULL,
-       score INTEGER
+       score INTEGER,
+       FOREIGN KEY (user_id) REFERENCES users(user_id)
+           ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS recipe_votes (
        vote_id INTEGER PRIMARY KEY AUTOINCREMENT,
-       recipe_id INTEGER REFERENCES recipes(recipe_id),
-       user_id INTEGER REFERENCES users(user_id),
+       recipe_id INTEGER,
+       user_id INTEGER,
        vote_type TEXT CHECK (vote_type in ('upvote', 'downvote')),
+       FOREIGN KEY (recipe_id) REFERENCES recipes(recipe_id)
+           ON DELETE CASCADE,
+       FOREIGN KEY (user_id) REFERENCES users(user_id)
+           ON DELETE CASCADE,
        UNIQUE (recipe_id, user_id)
 );
 
 CREATE TABLE IF NOT EXISTS comments (
        comment_id INTEGER PRIMARY KEY AUTOINCREMENT,
-       recipe_id INTEGER REFERENCES recipes(recipe_id),
-       user_id INTEGER REFERENCES users(user_id),
+       recipe_id INTEGER,
+       user_id INTEGER,
        content TEXT NOT NULL,
        creation_date TIMESTAMP NOT NULL,
        last_modified TIMESTAMP NOT NULL,
-       score INTEGER NOT NULL DEFAULT 0
+       score INTEGER NOT NULL DEFAULT 0,
+       FOREIGN KEY (recipe_id) REFERENCES recipes(recipe_id)
+           ON DELETE CASCADE,
+       FOREIGN KEY (user_id) REFERENCES users(user_id)
+           ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS comment_votes (
        vote_id INTEGER PRIMARY KEY AUTOINCREMENT,
-       comment_id INTEGER REFERENCES comments(comment_id),
-       user_id INTEGER REFERENCES users(user_id),
+       comment_id INTEGER,
+       user_id INTEGER,
        vote_type TEXT CHECK (vote_type in ('upvote', 'downvote')),
+       FOREIGN KEY (comment_id) REFERENCES comments(comment_id)
+           ON DELETE CASCADE,
+       FOREIGN KEY (user_id) REFERENCES users(user_id)
+           ON DELETE CASCADE,
        UNIQUE (comment_id, user_id)
 );
 
