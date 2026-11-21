@@ -134,7 +134,6 @@ def __verify_comment_owner(comment_id: int, user_id: int):
 
 def __verify_recipe_owner(recipe_id: int, user_id: int):
     sql = """SELECT recipe_user FROM recipes WHERE recipe_id = ?"""
-    breakpoint()
     recipe_author = db.query(sql, [recipe_id])[0][0]
     if user_id != recipe_author:
         raise ValueError
