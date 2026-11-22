@@ -1,24 +1,26 @@
 #!/usr/bin/env python3
-
+"""High level functions for interacting with recipes and comments."""
 from typing import Any
 from sqlite3 import IntegrityError
 import db
 from exceptions import UserInputError, AccessControlError
 
 
-def add_recipe(content: str, title: str, user_id: int):
+def add_recipe(content: str, title: str, user_id: int) -> None:
+    """Add a recipe to the database."""
     sql = """INSERT INTO recipes (user_id, title, content, creation_date, last_modified, score)
              VALUES (?, ?, ?, datetime('now'), datetime('now'), 0)"""
     try:
         db.execute(sql, [user_id, title, content])
-    except:
+    except Exception as e:
         if content is None or content == "":
-            raise UserInputError("Failed creating recipe with empty content.")
+            raise UserInputError("Failed creating recipe with empty content.") from e
         if title is None or title == "":
-            raise UserInputError("Failed creating recipe with empty title.")
-        raise UserInputError("Failed creating recipe.")
+            raise UserInputError("Failed creating recipe with empty title.") from e
+        raise UserInputError("Failed creating recipe.") from e
 
-def get_all_recipes():
+def get_all_recipes() -> Any:
+    """Get all recipes from the database."""
     sql = """SELECT r.recipe_id, r.title, u.username, r.score, r.creation_date, u.username
              FROM recipes r, users u
              WHERE r.user_id = u.user_id
@@ -26,7 +28,8 @@ def get_all_recipes():
     return db.query(sql)
 
 
-def get_recipe(recipe_id: int):
+def get_recipe(recipe_id: int) -> Any:
+    """Get recipe identified by the given recipe_id."""
     sql = """SELECT r.recipe_id, r.title, u.username, r.score, r.creation_date,
                 r.content, u.username, r.user_id
              FROM recipes r, users u
@@ -35,11 +38,12 @@ def get_recipe(recipe_id: int):
 
     try:
         return db.query(sql, [recipe_id])[0]
-    except:
-        raise UserInputError(f"Recipe ID {recipe_id} does not exist.")
+    except Exception as e:
+        raise UserInputError(f"Recipe ID {recipe_id} does not exist.") from e
 
 
-def get_comments(recipe_id: int):
+def get_comments(recipe_id: int) -> Any:
+    """Get all comments under the recipe identified by the given recipe_id."""
     sql = """SELECT c.comment_id, c.recipe_id, c.user_id, c.content,
                 c.creation_date, c.last_modified, c.score, u.username
              FROM comments c, users u
@@ -47,11 +51,12 @@ def get_comments(recipe_id: int):
              AND u.user_id = c.user_id"""
     try:
         return db.query(sql, [recipe_id])
-    except:
-        raise UserInputError(f"Recipe ID {recipe_id} does not exist.")
+    except Exception as e:
+        raise UserInputError(f"Recipe ID {recipe_id} does not exist.") from e
 
 
-def get_comment(comment_id: int):
+def get_comment(comment_id: int) -> Any:
+    """Get a comment specified by the given comment_id."""
     sql = """SELECT c.comment_id, c.recipe_id, c.user_id, c.content,
                 c.creation_date, c.last_modified, c.score, u.username
              FROM comments c, users u
@@ -59,11 +64,12 @@ def get_comment(comment_id: int):
              AND u.user_id = c.user_id"""
     try:
         return db.query(sql, [comment_id])[0]
-    except:
-        raise UserInputError(f"Comment ID {comment_id} does not exist.")
+    except Exception as e:
+        raise UserInputError(f"Comment ID {comment_id} does not exist.") from e
 
 
-def add_comment_vote(comment_id: int, user_id: int, vote_type: str):
+def add_comment_vote(comment_id: int, user_id: int, vote_type: str) -> None:
+    """Add a vote to the given comment. Also updates the score of the comment."""
     if vote_type not in ["upvote", "downvote"]:
         raise UserInputError(f"\"{vote_type}\" is not upvote or downvote.")
 
@@ -81,40 +87,44 @@ def add_comment_vote(comment_id: int, user_id: int, vote_type: str):
 
     try:
         db.execute(sql, [comment_id, user_id, vote_type])
-    except IntegrityError:
-        raise UserInputError("User already voted the recipe.")
+    except IntegrityError as e:
+        raise UserInputError("User already voted the recipe.") from e
 
 
-def add_comment(recipe_id: int, user_id: int, content: str):
+def add_comment(recipe_id: int, user_id: int, content: str) -> None:
+    """Add a comment under the specified recipe."""
     sql = """INSERT INTO comments (
                 recipe_id, user_id, content, creation_date, last_modified, score
              )
              VALUES (?, ?, ?, datetime('now'), datetime('now'), 0)"""
     try:
         db.execute(sql, [recipe_id, user_id, content])
-    except:
-        raise UserInputError("Failed making comment with empty content.")
+    except Exception as e:
+        raise UserInputError("Failed making comment with empty content.") from e
 
 
-def delete_comment(comment_id: int, user_id: int):
+def delete_comment(comment_id: int, user_id: int) -> None:
+    """Delete the specified comment."""
     __verify_comment_owner(comment_id, user_id)
     sql = """DELETE FROM comments WHERE comment_id = ?"""
     try:
         db.execute(sql, [comment_id])
-    except:
-        raise UserInputError(f"Comment ID {comment_id} does not exist.")
+    except Exception as e:
+        raise UserInputError(f"Comment ID {comment_id} does not exist.") from e
 
 
-def delete_recipe(recipe_id: int, user_id: int):
+def delete_recipe(recipe_id: int, user_id: int) -> None:
+    """Delete the specified recipe."""
     __verify_recipe_owner(recipe_id, user_id)
     sql = """DELETE FROM recipes WHERE recipe_id = ?"""
     try:
         db.execute(sql, [recipe_id])
-    except:
-        raise UserInputError(f"Recipe ID {recipe_id} does not exist.")
+    except Exception as e:
+        raise UserInputError(f"Recipe ID {recipe_id} does not exist.") from e
 
 
-def add_recipe_vote(recipe_id: int, user_id: int, vote_type: str):
+def add_recipe_vote(recipe_id: int, user_id: int, vote_type: str) -> None:
+    """Add a vote under the specified recipe. Also calculates the new score."""
     # This is one-to-one to add_comment_vote
     if vote_type not in ["upvote", "downvote"]:
         raise UserInputError(f"\"{vote_type}\" is not upvote or downvote.")
@@ -128,30 +138,41 @@ def add_recipe_vote(recipe_id: int, user_id: int, vote_type: str):
 
     try:
         db.execute(sql, [recipe_id, user_id, vote_type])
-    except IntegrityError:
-        raise UserInputError("User already voted recipe.")
+    except IntegrityError as e:
+        raise UserInputError("User already voted recipe.") from e
 
 
-def edit_comment(comment_id: int, user_id: int, content: str):
+def edit_comment(comment_id: int, user_id: int, content: str) -> None:
+    """Replace a specified comment with a new one."""
     __verify_comment_owner(comment_id, user_id)
     sql = """UPDATE comments
              SET content = ?
              WHERE comment_id = ?"""
     try:
         db.execute(sql, [content, comment_id, user_id])
-    except:
-        raise UserInputError(f"Failed editing comment {comment_id} with content \"{content}\".")
+    except Exception as e:
+        raise UserInputError(f"Failed editing comment {comment_id} with content \"{content}\".")\
+            from e
 
 
-def edit_recipe(recipe_id: int, user_id: int, content: str, title: str):
+def edit_recipe(recipe_id: int, user_id: int, content: str, title: str) -> None:
+    """Replace a specified recipe with a new one."""
     __verify_recipe_owner(recipe_id, user_id)
     sql = """UPDATE recipes
              SET content = ?, title = ?
              WHERE recipe_id = ?"""
-    db.execute(sql, [content, title, recipe_id])
+    try:
+        db.execute(sql, [content, title, recipe_id])
+    except Exception as e:
+        if content is None or content == "":
+            raise UserInputError("Failed creating recipe with empty content.") from e
+        if title is None or title == "":
+            raise UserInputError("Failed creating recipe with empty title.") from e
+        raise UserInputError("Failed creating recipe.") from e
 
 
-def search_recipe(query: str):
+def search_recipe(query: str) -> Any:
+    """Returns recipes matching the given search term."""
     sql = """SELECT * FROM recipes
              WHERE title LIKE ?"""
 
@@ -159,14 +180,16 @@ def search_recipe(query: str):
     return db.query(sql, ["%" + query + "%"])
 
 
-def __verify_comment_owner(comment_id: int, user_id: int):
+def __verify_comment_owner(comment_id: int, user_id: int) -> None:
+    """Verifies that the comment is owned by the given user."""
     sql = """SELECT user_id FROM comments where comment_id = ?"""
     comment_author = db.query(sql, [comment_id])[0][0]
     if user_id != comment_author:
         raise AccessControlError("Comment is not owned by user.")
 
 
-def __verify_recipe_owner(recipe_id: int, user_id: int):
+def __verify_recipe_owner(recipe_id: int, user_id: int) -> None:
+    """Verifies that the recipe is owned by the given user."""
     sql = """SELECT user_id FROM recipes WHERE recipe_id = ?"""
     recipe_author = db.query(sql, [recipe_id])[0][0]
     if user_id != recipe_author:
