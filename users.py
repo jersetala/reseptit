@@ -1,33 +1,35 @@
 #!/usr/bin/env python3
-
-from typing import cast
-from exceptions import UserInputError
+"""Provide high level functions for handling users."""
 from sqlite3 import IntegrityError
-from werkzeug.security import generate_password_hash, check_password_hash
+from typing import cast
+
+from werkzeug.security import check_password_hash, generate_password_hash
+
 import db
+from exceptions import UserInputError
 
 DUMMY_HASH = generate_password_hash("0")
 
 
 def create_user(username: str, password: str) -> None:
+    "Create a new user."
     password_hash = generate_password_hash(password)
     sql = "INSERT INTO users (username, password_hash) VALUES (?, ?)"
     try:
         db.execute(sql, [username, password_hash])
-    except IntegrityError:
-        raise UserInputError("Failed creating user.")
-    return None
+    except IntegrityError as e:
+        raise UserInputError("Failed creating user.") from e
 
 
 def check_login(username: str, password: str) -> int | None:
+    "Check whether a user has the given password. Returns the user_id if true."
     sql = "SELECT user_id, password_hash FROM users WHERE username = ?"
     result = db.query(sql, [username])
     if len(result) == 1:
         user_id, password_hash = result[0]
         if check_password_hash(password_hash, password):
             return cast(int, user_id)
-        else:
-            return None
+        return None
     # We check the password against a dummy hash to
     # make it harder to enumerate users by a timing attack.
     check_password_hash(DUMMY_HASH, password)
