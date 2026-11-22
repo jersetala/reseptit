@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """The entire application. Contains the routes of the app."""
+
 import sys
 from functools import wraps
 from typing import Any, Callable, cast
 
-from flask import (Flask, abort, flash, redirect, render_template, request,
-                   session)
+from flask import Flask, abort, flash, redirect, render_template, request, session
 from flask.typing import ResponseReturnValue
 from markupsafe import escape
 
@@ -30,8 +30,10 @@ except FileNotFoundError as e:
 
 db.init_app(app)
 
+
 def require_login(f: Callable[..., Any]) -> Callable[..., Any]:
     """Wraps the given route such that the user must be logged in to access it."""
+
     @wraps(f)
     def decorated_function(*args: Any, **kwargs: Any) -> Any:
         if session.get("user_id") is None:

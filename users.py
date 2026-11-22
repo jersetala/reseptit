@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Provide high level functions for handling users."""
+
 from sqlite3 import IntegrityError
 from typing import cast
 

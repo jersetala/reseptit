@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """High level functions for interacting with recipes and comments."""
+
 from typing import Any
 from sqlite3 import IntegrityError
 import db
@@ -18,6 +19,7 @@ def add_recipe(content: str, title: str, user_id: int) -> None:
         if title is None or title == "":
             raise UserInputError("Failed creating recipe with empty title.") from e
         raise UserInputError("Failed creating recipe.") from e
+
 
 def get_all_recipes() -> Any:
     """Get all recipes from the database."""
@@ -71,7 +73,7 @@ def get_comment(comment_id: int) -> Any:
 def add_comment_vote(comment_id: int, user_id: int, vote_type: str) -> None:
     """Add a vote to the given comment. Also updates the score of the comment."""
     if vote_type not in ["upvote", "downvote"]:
-        raise UserInputError(f"\"{vote_type}\" is not upvote or downvote.")
+        raise UserInputError(f'"{vote_type}" is not upvote or downvote.')
 
     # What this does is add a vote to the database according to the following rules:
     # 1. If a vote does not exist for that user to that comment, add it.
@@ -127,7 +129,7 @@ def add_recipe_vote(recipe_id: int, user_id: int, vote_type: str) -> None:
     """Add a vote under the specified recipe. Also calculates the new score."""
     # This is one-to-one to add_comment_vote
     if vote_type not in ["upvote", "downvote"]:
-        raise UserInputError(f"\"{vote_type}\" is not upvote or downvote.")
+        raise UserInputError(f'"{vote_type}" is not upvote or downvote.')
 
     sql = """INSERT INTO recipe_votes (recipe_id, user_id, vote_type)
              VALUES (?, ?, ?)
@@ -151,8 +153,9 @@ def edit_comment(comment_id: int, user_id: int, content: str) -> None:
     try:
         db.execute(sql, [content, comment_id, user_id])
     except Exception as e:
-        raise UserInputError(f"Failed editing comment {comment_id} with content \"{content}\".")\
-            from e
+        raise UserInputError(
+            f'Failed editing comment {comment_id} with content "{content}".'
+        ) from e
 
 
 def edit_recipe(recipe_id: int, user_id: int, content: str, title: str) -> None:

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Functions for low-level interaction with the database."""
+
 import sqlite3
 from sqlite3 import Connection
 from typing import Any, cast
@@ -32,6 +33,7 @@ def execute(sql: str, params: list[Any]) -> None:
 def init_app(app: Flask) -> None:
     """Attaches a cleanup function to a provided `Flask` that removes a connection after
     an appcontext gets torn down."""
+
     @app.teardown_appcontext
     def close_connection(e: BaseException | None = None) -> None:
         con = g.pop("DATABASE", None)
