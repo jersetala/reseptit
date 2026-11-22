@@ -1,37 +1,39 @@
 #!/usr/bin/env python3
-
-from exceptions import UserInputError, AccessControlError
+"""The entire application. Contains the routes of the app."""
+import sys
 from functools import wraps
-from glob import escape
-import datetime
-from flask import Flask, render_template, request, flash, redirect, g, session
-from config import secret_key
-from sqlite3 import IntegrityError
-from werkzeug.security import generate_password_hash, check_password_hash
-import db
-import recipes
-from recipes import add_recipe, get_all_recipes
-from users import create_user, check_login
+from typing import Any, Callable, cast
+
+from flask import (Flask, abort, flash, redirect, render_template, request,
+                   session)
+from flask.typing import ResponseReturnValue
 from markupsafe import escape
 
+import db
+import recipes
+from config import SECRET_KEY
+from exceptions import AccessControlError, UserInputError
+from users import check_login, create_user
+
 app = Flask(__name__)
-app.secret_key = secret_key
+app.secret_key = SECRET_KEY
 
 # Test if database exists.
 try:
-    f = open("database.db", "r")
-    f.close()
+    with open("database.db", "rb") as file:
+        ...
 except FileNotFoundError as e:
     print("Database not found. Create a database at {e.filename}")
     print("You can do this by running in console:")
     print(f"sqlite3 {e.filename} < schema.sql")
-    quit()
+    sys.exit()
 
 db.init_app(app)
 
-def require_login(f):
+def require_login(f: Callable[..., Any]) -> Callable[..., Any]:
+    """Wraps the given route such that the user must be logged in to access it."""
     @wraps(f)
-    def decorated_function(*args, **kwargs):
+    def decorated_function(*args: Any, **kwargs: Any) -> Any:
         if session.get("user_id") is None:
             flash("FAILURE: Login required!")
             return redirect("/")
@@ -41,19 +43,23 @@ def require_login(f):
 
 
 @app.route("/")
-def index():
-    return render_template("index.html", recipes=get_all_recipes())
+def index() -> str:
+    """Return the index of the webapp."""
+    return render_template("index.html", recipes=recipes.get_all_recipes())
 
 
 @app.route("/recipe/<int:recipe_id>")
-def show_recipe(recipe_id: int):
+def show_recipe(recipe_id: int) -> str:
+    "Return detailed information about a recipe."
     recipe = recipes.get_recipe(recipe_id)
     comments = recipes.get_comments(recipe_id)
     return render_template("recipe.html", recipe=recipe, comments=comments)
 
 
 @app.route("/register", methods=["GET", "POST"])
-def register():
+def register() -> ResponseReturnValue:
+    """Handle user registration. If accessed with GET, render the form.
+    If accessed with POST, do the database operation to register."""
     if request.method == "GET":
         return render_template("register.html")
     username = escape(request.form["username"])
@@ -74,7 +80,9 @@ def register():
 
 
 @app.route("/login", methods=["POST"])
-def login():
+def login() -> ResponseReturnValue:
+    """Log the user in by adding their user_id to the session if
+    the username and password match."""
     username = escape(request.form["username"])
     password = request.form["password"]
 
@@ -91,7 +99,8 @@ def login():
 
 @app.route("/create_recipe", methods=["POST"])
 @require_login
-def create_recipe():
+def create_recipe() -> ResponseReturnValue:
+    """Takes a form and creates a recipe from the form."""
     content = escape(request.form["content"])
     title = escape(request.form["title"])
     user_id = get_user_id()
@@ -103,18 +112,19 @@ def create_recipe():
 
 @app.route("/logout")
 @require_login
-def logout():
-    session.pop("username", None)
-    session.pop("user_id", None)
+def logout() -> ResponseReturnValue:
+    """Clear the session."""
+    session.clear()
     return redirect("/")
 
 
 @app.route("/new_comment", methods=["POST"])
 @require_login
-def new_comment():
+def new_comment() -> ResponseReturnValue:
+    """Add a comment under a recipe according to a form."""
     try:
         recipe_id = int(request.form["recipe_id"])
-    except:
+    except ValueError:
         flash("ERROR: Invalid recipe ID.")
         return redirect("/")
     content = escape(request.form["content"])
@@ -126,27 +136,29 @@ def new_comment():
 
 @app.route("/delete_comment/<int:comment_id>", methods=["POST"])
 @require_login
-def delete_comment(comment_id: int):
+def delete_comment(comment_id: int) -> ResponseReturnValue:
+    """Delete the given comment."""
     user_id = get_user_id()
     try:
         recipes.delete_comment(comment_id, user_id)
     except AccessControlError:
         flash("FAILURE: No access.")
-    except:
-        flash("FAILURE: Failed to remove comment!")
+    except UserInputError as e:
+        flash(f"FAILURE: Failed to remove comment with error '{e.message}'!")
         return redirect("/")
     return redirect(request.referrer or "/")
 
 
 @app.route("/vote_comment/<int:comment_id>", methods=["POST"])
 @require_login
-def vote_comment(comment_id: int):
+def vote_comment(comment_id: int) -> ResponseReturnValue:
+    """Either upvote or downvote the given comment according to a form."""
     vote_type = request.form["vote"]
     user_id = get_user_id()
     try:
         recipes.add_comment_vote(comment_id, user_id, vote_type)
-    except:
-        flash("FAILURE: Failed to vote.")
+    except UserInputError as e:
+        flash(f"FAILURE: Failed to vote with error '{e.message}'.")
         return redirect(request.referrer or "/")
 
     return redirect(request.referrer or "/")
@@ -154,7 +166,8 @@ def vote_comment(comment_id: int):
 
 @app.route("/delete_recipe/<int:recipe_id>", methods=["POST"])
 @require_login
-def delete_recipe(recipe_id: int):
+def delete_recipe(recipe_id: int) -> ResponseReturnValue:
+    """Delete the given recipe."""
     user_id = get_user_id()
     try:
         recipes.delete_recipe(recipe_id, user_id)
@@ -170,14 +183,15 @@ def delete_recipe(recipe_id: int):
 
 @app.route("/vote_recipe/<int:recipe_id>", methods=["POST"])
 @require_login
-def vote_recipe(recipe_id: int):
+def vote_recipe(recipe_id: int) -> ResponseReturnValue:
+    """Either upvote or downvote the given recipe according to a form."""
     vote_type = request.form["vote"]
     user_id = get_user_id()
     try:
         recipes.add_recipe_vote(recipe_id, user_id, vote_type)
     except AccessControlError:
         flash("FAILURE: No access.")
-    except:
+    except UserInputError:
         flash("FAILURE: Failed to vote.")
         return redirect(request.referrer or "/")
 
@@ -186,7 +200,9 @@ def vote_recipe(recipe_id: int):
 
 @app.route("/edit_comment/<int:comment_id>", methods=["GET", "POST"])
 @require_login
-def edit_comment(comment_id: int):
+def edit_comment(comment_id: int) -> ResponseReturnValue:
+    """If the request method is GET, render a form for editing a comment.
+    If the method is POST replace the given comment by a new one given by the form."""
     comment = recipes.get_comment(comment_id)
     if request.method == "GET":
         return render_template("edit_comment.html", comment=comment)
@@ -194,9 +210,9 @@ def edit_comment(comment_id: int):
     content = request.form["content"]
     try:
         recipes.edit_comment(comment_id, user_id, content)
-    except UserInputError:
+    except AccessControlError:
         flash("FAILURE: No access.")
-    except:
+    except UserInputError:
         flash("FAILURE: Failed to edit comment!")
 
     comment_recipe = comment["recipe_id"]
@@ -205,7 +221,10 @@ def edit_comment(comment_id: int):
 
 @app.route("/edit_recipe/<int:recipe_id>", methods=["GET", "POST"])
 @require_login
-def edit_recipe(recipe_id: int):
+def edit_recipe(recipe_id: int) -> ResponseReturnValue:
+    """If the request method is GET, render a form for editing a recipe.
+    If the method is POST replace the given recipe by a new one given by the form."""
+
     recipe = recipes.get_recipe(recipe_id)
     if request.method == "GET":
         return render_template("edit_recipe.html", recipe=recipe)
@@ -216,14 +235,15 @@ def edit_recipe(recipe_id: int):
         recipes.edit_recipe(recipe_id, user_id, content, title)
     except AccessControlError:
         flash("FAILURE: No access.")
-    except:
+    except UserInputError:
         flash("FAILURE: Failed to edit comment!")
 
     return redirect(request.referrer or f"/recipe/{recipe_id}")
 
 
 @app.route("/search", methods=["GET"])
-def search():
+def search() -> str:
+    """Display search results for recipes with a query given by a request argument."""
     # will abort() if doesn't exist
     query = request.args["q"]
     results = recipes.search_recipe(query)
@@ -231,4 +251,8 @@ def search():
 
 
 def get_user_id() -> int:
-    return session.get("user_id")
+    """Return the current user id from the session."""
+    user_id = session.get("user_id")
+    if user_id is None:
+        abort(403)
+    return cast(int, user_id)
