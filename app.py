@@ -11,6 +11,7 @@ from markupsafe import escape
 
 import db
 import recipes
+import comments
 from config import SECRET_KEY
 from exceptions import AccessControlError, UserInputError
 from users import check_login, create_user
@@ -54,8 +55,8 @@ def index() -> str:
 def show_recipe(recipe_id: int) -> str:
     "Return detailed information about a recipe."
     recipe = recipes.get_recipe(recipe_id)
-    comments = recipes.get_comments(recipe_id)
-    return render_template("recipe.html", recipe=recipe, comments=comments)
+    comment_list = comments.get_comments(recipe_id)
+    return render_template("recipe.html", recipe=recipe, comments=comment_list)
 
 
 @app.route("/register", methods=["GET", "POST"])
@@ -132,7 +133,7 @@ def new_comment() -> ResponseReturnValue:
     content = escape(request.form["content"])
     user_id = get_user_id()
 
-    recipes.add_comment(recipe_id, user_id, content)
+    comments.add_comment(recipe_id, user_id, content)
     return redirect(f"/recipe/{recipe_id}")
 
 
@@ -142,7 +143,7 @@ def delete_comment(comment_id: int) -> ResponseReturnValue:
     """Delete the given comment."""
     user_id = get_user_id()
     try:
-        recipes.delete_comment(comment_id, user_id)
+        comments.delete_comment(comment_id, user_id)
     except AccessControlError:
         flash("FAILURE: No access.")
     except UserInputError as e:
@@ -158,7 +159,7 @@ def vote_comment(comment_id: int) -> ResponseReturnValue:
     vote_type = request.form["vote"]
     user_id = get_user_id()
     try:
-        recipes.add_comment_vote(comment_id, user_id, vote_type)
+        comments.add_comment_vote(comment_id, user_id, vote_type)
     except UserInputError as e:
         flash(f"FAILURE: Failed to vote with error '{e.message}'.")
         return redirect(request.referrer or "/")
@@ -205,13 +206,13 @@ def vote_recipe(recipe_id: int) -> ResponseReturnValue:
 def edit_comment(comment_id: int) -> ResponseReturnValue:
     """If the request method is GET, render a form for editing a comment.
     If the method is POST replace the given comment by a new one given by the form."""
-    comment = recipes.get_comment(comment_id)
+    comment = comments.get_comment(comment_id)
     if request.method == "GET":
         return render_template("edit_comment.html", comment=comment)
     user_id = get_user_id()
     content = request.form["content"]
     try:
-        recipes.edit_comment(comment_id, user_id, content)
+        comments.edit_comment(comment_id, user_id, content)
     except AccessControlError:
         flash("FAILURE: No access.")
     except UserInputError:
