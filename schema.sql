@@ -35,7 +35,7 @@ CREATE TABLE IF NOT EXISTS recipe_categories (
        category_name TEXT NOT NULL UNIQUE
 );
 
-CREATE TABLE IF NOT EXISTS recipe_categoy_assignments (
+CREATE TABLE IF NOT EXISTS recipe_category_assignments (
        recipe_id INTEGER NOT NULL,
        category_id INTEGER NOT NULL,
        FOREIGN KEY (recipe_id) REFERENCES recipes(recipe_id),
