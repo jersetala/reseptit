@@ -8,23 +8,22 @@
     </head>
     <body>
         <nav>
-            <ol>
-                <li><a href="/">Index</a></li>
-            </ol>
-            <form action="/search" method="get" role="search">
-                <label for="recipe-search">Search</label>
-                <input
-                    type="search"
-                    id="recipe-search"
-                    name="q"
-                    placeholder="Search..."
-                />
-                <button type="submit">Search</button>
-            </form>
+            <ul>
+                <li><a href="/">Reseptit</a></li>
+                <li>
+                    <form action="/search" method="get" role="search">
+                        <label for="recipe-search">Search</label>
+                        <input
+                            type="search"
+                            id="recipe-search"
+                            name="q"
+                            placeholder="Search..."
+                        />
+                        <button type="submit">Search</button>
+                    </form>
+                </li>
+            </ul>
         </nav>
-        <header>
-            <a href="/">Reseptit</a>
-        </header>
         {% with messages = get_flashed_messages() %}
             {% if messages %}
                 <ul class="flashes">
