@@ -17,14 +17,36 @@ CREATE TABLE IF NOT EXISTS recipes (
        creation_date TIMESTAMP NOT NULL,
        last_modified TIMESTAMP NOT NULL,
        score INTEGER,
+       cook_time INTEGER,
+       category INTEGER,
+       yield INTEGER,
+       diet INTEGER,
        FOREIGN KEY (user_id) REFERENCES users(user_id)
            ON DELETE CASCADE
 );
 
+CREATE TABLE IF NOT EXISTS diets (
+       diet_id INTEGER PRIMARY KEY AUTOINCREMENT,
+       diet_name TEXT NOT NULL UNIQUE
+);
+
+CREATE TABLE IF NOT EXISTS recipe_categories (
+       category_id INTEGER PRIMARY KEY AUTOINCREMENT,
+       category_name TEXT NOT NULL UNIQUE
+);
+
+CREATE TABLE IF NOT EXISTS recipe_categoy_assignments (
+       recipe_id INTEGER NOT NULL,
+       category_id INTEGER NOT NULL,
+       FOREIGN KEY (recipe_id) REFERENCES recipes(recipe_id),
+       FOREIGN KEY (category_id) REFERENCES recipe_categories(category_id),
+       UNIQUE (recipe_id, category_id)
+);
+
 CREATE TABLE IF NOT EXISTS recipe_votes (
        vote_id INTEGER PRIMARY KEY AUTOINCREMENT,
-       recipe_id INTEGER,
-       user_id INTEGER,
+       recipe_id INTEGER NOT NULL,
+       user_id INTEGER NOT NULL,
        vote_type TEXT CHECK (vote_type in ('upvote', 'downvote')),
        FOREIGN KEY (recipe_id) REFERENCES recipes(recipe_id)
            ON DELETE CASCADE,
@@ -35,8 +57,8 @@ CREATE TABLE IF NOT EXISTS recipe_votes (
 
 CREATE TABLE IF NOT EXISTS comments (
        comment_id INTEGER PRIMARY KEY AUTOINCREMENT,
-       recipe_id INTEGER,
-       user_id INTEGER,
+       recipe_id INTEGER NOT NULL,
+       user_id INTEGER NOT NULL,
        content TEXT NOT NULL,
        creation_date TIMESTAMP NOT NULL,
        last_modified TIMESTAMP NOT NULL,
@@ -49,8 +71,8 @@ CREATE TABLE IF NOT EXISTS comments (
 
 CREATE TABLE IF NOT EXISTS comment_votes (
        vote_id INTEGER PRIMARY KEY AUTOINCREMENT,
-       comment_id INTEGER,
-       user_id INTEGER,
+       comment_id INTEGER NOT NULL,
+       user_id INTEGER NOT NULL,
        vote_type TEXT CHECK (vote_type in ('upvote', 'downvote')),
        FOREIGN KEY (comment_id) REFERENCES comments(comment_id)
            ON DELETE CASCADE,
