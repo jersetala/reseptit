@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+from typing import cast
 from exceptions import UserInputError
 from sqlite3 import IntegrityError
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -14,7 +15,8 @@ def create_user(username: str, password: str) -> None:
     try:
         db.execute(sql, [username, password_hash])
     except IntegrityError:
-        raise UserInputError
+        raise UserInputError("Failed creating user.")
+    return None
 
 
 def check_login(username: str, password: str) -> int | None:
@@ -23,9 +25,10 @@ def check_login(username: str, password: str) -> int | None:
     if len(result) == 1:
         user_id, password_hash = result[0]
         if check_password_hash(password_hash, password):
-            return user_id
-    else:
-        # We check the password against a dummy hash to
-        # make it harder to enumerate users by a timing attack.
-        check_password_hash(DUMMY_HASH, password)
-        return None
+            return cast(int, user_id)
+        else:
+            return None
+    # We check the password against a dummy hash to
+    # make it harder to enumerate users by a timing attack.
+    check_password_hash(DUMMY_HASH, password)
+    return None
