@@ -393,11 +393,14 @@ def display_user(target_user_id: int) -> str:
 
     user_id = session.get("user_id", None)
     recipes_, categories = recipes.get_user_recipes(target_user_id)
+    total_score, post_count = recipes.get_user_statistics(target_user_id)
     return render_template(
         "user.html",
         username=username,
         bio=bio,
         bio_max_length=MAX_BIO_LENGTH,
+        total_score=total_score,
+        post_count=post_count,
         recipes=recipes_,
         all_categories=get_all_categories(),
         categories=categories,

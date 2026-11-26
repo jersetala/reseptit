@@ -184,3 +184,12 @@ def get_user_recipes(user_id: int) -> Any:
         categories = []
 
     return (recipes, categories)
+
+
+def get_user_statistics(user_id: int) -> tuple[int, int]:
+    """Return a user's total recipe score and number of recipes."""
+    sql = """SELECT COALESCE(SUM(score), 0) AS total_score, COUNT(*) AS post_count
+             FROM recipes
+             WHERE user_id = ?"""
+    result = db.query(sql, [user_id])
+    return result[0]["total_score"], result[0]["post_count"]

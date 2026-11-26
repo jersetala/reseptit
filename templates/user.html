@@ -7,12 +7,8 @@
         <p>{{ bio }}</p>
     {% endif %}
 
-    <hr />
-
-    {% from "_recipe_render.html" import display_recipe %}
-    {% for recipe, cats in recipes|zip(categories) %}
-        {{ display_recipe(recipe, cats, all_categories) }}
-    {% endfor %}
+    <p>Total score: {{ total_score }}</p>
+    <p>Post count: {{ post_count }}</p>
 
     {% if user_id == target_user_id %}
         <form action="/edit_bio" method="post">
@@ -27,6 +23,16 @@
             <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
             <button type="submit">Save bio</button>
         </form>
+    {% endif %}
+
+    <hr />
+
+    {% from "_recipe_render.html" import display_recipe %}
+    {% for recipe, cats in recipes|zip(categories) %}
+        {{ display_recipe(recipe, cats, all_categories) }}
+    {% endfor %}
+
+    {% if user_id == target_user_id %}
         <p><a href="/delete_account">Delete my account</a></p>
     {% endif %}
 
