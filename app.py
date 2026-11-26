@@ -250,8 +250,6 @@ def delete_recipe(recipe_id: int) -> ResponseReturnValue:
 def vote_recipe(recipe_id: int) -> ResponseReturnValue:
     """Either upvote or downvote the given recipe according to a form."""
     check_csrf()
-    print(session["csrf_token"])
-    print(request.form["csrf_token"])
     vote_type = request.form["vote"]
     user_id = get_user_id()
     try:
