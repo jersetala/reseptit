@@ -38,6 +38,7 @@
             <p>{{ recipe.content }}</p>
         </section>
 
+        {% if comments %}
         <section class="comments">
             <h2>Comments</h2>
             {% for comment in comments %}
@@ -67,6 +68,7 @@
                 </article>
             {% endfor %}
         </section>
+        {% endif %}
 
         {% if session.user_id %}
             <section class="comment-create">
