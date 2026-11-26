@@ -20,6 +20,11 @@ from users import check_login, create_user
 app = Flask(__name__)
 app.secret_key = SECRET_KEY
 
+# This allows the use of a zip filter like
+# {% for val1, val2 in list1|zip(list2) %}
+# which translates to
+# for val1, val2 in zip(list1, list2):
+# This is used at least once to combine recipes and categories.
 app.jinja_env.filters["zip"] = zip
 
 # Test if database exists.
