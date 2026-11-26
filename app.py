@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """The entire application. Contains the routes of the app."""
 
+from secrets import token_hex
+
 import sys
 from functools import wraps
 from typing import Any, Callable, cast
@@ -51,6 +53,13 @@ def require_login(f: Callable[..., Any]) -> Callable[..., Any]:
         return f(*args, **kwargs)
 
     return decorated_function
+
+
+def check_csrf() -> None:
+    """Check if session CSRF token matches the request. Fail if not."""
+    form_token = request.form.get("csrf_token")
+    if form_token != session["csrf_token"]:
+        abort(403)
 
 
 @app.route("/")
@@ -128,6 +137,8 @@ def login() -> ResponseReturnValue:
         flash("FAILURE: Wrong username or password!")
         return redirect("/")
 
+    session["csrf_token"] = token_hex(16)
+
     flash("SUCCESS: User logged in!")
     return redirect("/")
 
@@ -136,6 +147,7 @@ def login() -> ResponseReturnValue:
 @require_login
 def create_recipe() -> ResponseReturnValue:
     """Takes a form and creates a recipe from the form."""
+    check_csrf()
     content = escape(request.form["content"]).strip()
     title = escape(request.form["title"]).strip()
     user_id = get_user_id()
@@ -166,6 +178,7 @@ def logout() -> ResponseReturnValue:
 @require_login
 def new_comment() -> ResponseReturnValue:
     """Add a comment under a recipe according to a form."""
+    check_csrf()
     try:
         recipe_id = int(request.form["recipe_id"])
     except ValueError:
@@ -187,6 +200,7 @@ def new_comment() -> ResponseReturnValue:
 @require_login
 def delete_comment(comment_id: int) -> ResponseReturnValue:
     """Delete the given comment."""
+    check_csrf()
     user_id = get_user_id()
     comment = comments.get_comment(comment_id)
 
@@ -205,6 +219,7 @@ def delete_comment(comment_id: int) -> ResponseReturnValue:
 @require_login
 def vote_comment(comment_id: int) -> ResponseReturnValue:
     """Either upvote or downvote the given comment according to a form."""
+    check_csrf()
     vote_type = request.form["vote"]
     user_id = get_user_id()
     comments.add_comment_vote(comment_id, user_id, vote_type)
@@ -216,6 +231,7 @@ def vote_comment(comment_id: int) -> ResponseReturnValue:
 @require_login
 def delete_recipe(recipe_id: int) -> ResponseReturnValue:
     """Delete the given recipe."""
+    check_csrf()
     user_id = get_user_id()
     recipe, _ = recipes.get_recipe(recipe_id)
     if not recipe:
@@ -233,6 +249,9 @@ def delete_recipe(recipe_id: int) -> ResponseReturnValue:
 @require_login
 def vote_recipe(recipe_id: int) -> ResponseReturnValue:
     """Either upvote or downvote the given recipe according to a form."""
+    check_csrf()
+    print(session["csrf_token"])
+    print(request.form["csrf_token"])
     vote_type = request.form["vote"]
     user_id = get_user_id()
     try:
@@ -259,6 +278,7 @@ def edit_comment(comment_id: int) -> ResponseReturnValue:
             return redirect(request.referrer or "/")
         return render_template("edit_comment.html", comment=comment)
 
+    check_csrf()
     content = request.form["content"].strip()
 
     if content == "":
@@ -295,6 +315,7 @@ def edit_recipe(recipe_id: int) -> ResponseReturnValue:
             all_categories=recipes.get_all_categories(),
         )
 
+    check_csrf()
     content = request.form["content"].strip()
     title = request.form["title"].strip()
     if len(title) < 4 or len(title) > 200:

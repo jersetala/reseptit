@@ -2,6 +2,7 @@
     <form method="post" action="{{ action }}">
         <textarea name="content" required rows="5" cols="40">{{ content }}</textarea>
         <input type="hidden" name="recipe_id" value="{{ recipe_id }}">
+        <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
         <button type="submit">
             {{ submit_text }}
         </button>

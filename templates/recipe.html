@@ -18,12 +18,14 @@
             {% if recipe.user_id == session.user_id %}
                 <a href="/edit_recipe/{{ recipe.recipe_id }}">Edit</a>
                 <form action="/delete_recipe/{{ recipe.recipe_id }}" method="post">
+                    <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
                     <button name="delete">Delete</button>
                 </form>
             {% endif %}
                 <form action="/vote_recipe/{{ recipe.recipe_id }}" method="post">
                     <button name="vote" value="upvote">Upvote</button>
                     <button name="vote" value="downvote">Downvote</button>
+                    <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
                 </form>
         </p>
     {% endif %}
@@ -50,11 +52,13 @@
                     <a href="/edit_comment/{{ comment.comment_id }}">Edit</a>
                     <form action="/delete_comment/{{ comment.comment_id }}" method="post">
                         <button name="delete">Delete</button>
+                        <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
                     </form>
                 {% endif %}
                 <form action="/vote_comment/{{ comment.comment_id }}" method="post">
                     <button name="vote" value="upvote">Upvote</button>
                     <button name="vote" value="downvote">Downvote</button>
+                    <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
                 </form>
             </p>
         {% endif %}
