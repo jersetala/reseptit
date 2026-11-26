@@ -17,18 +17,8 @@ CREATE TABLE IF NOT EXISTS recipes (
        creation_date TIMESTAMP NOT NULL,
        last_modified TIMESTAMP NOT NULL,
        score INTEGER,
-       cook_time INTEGER,
-       category INTEGER,
-       yield INTEGER,
-       diet INTEGER,
        FOREIGN KEY (user_id) REFERENCES users(user_id)
            ON DELETE CASCADE
-);
-
-CREATE TABLE IF NOT EXISTS diets (
-       diet_id INTEGER PRIMARY KEY AUTOINCREMENT,
-       diet_name TEXT NOT NULL UNIQUE,
-       diet_title TEXT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS recipe_categories (
