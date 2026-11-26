@@ -5,7 +5,7 @@
 -- Tables
 CREATE TABLE IF NOT EXISTS users (
        user_id INTEGER PRIMARY KEY AUTOINCREMENT,
-       username TEXT NOT NULL UNIQUE CHECK(length(username) <= 32),
+       username TEXT NOT NULL UNIQUE,
        password_hash TEXT NOT NULL
 );
 

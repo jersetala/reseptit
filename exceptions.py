@@ -9,11 +9,3 @@ class UserInputError(Exception):
     def __init__(self, message: str) -> None:
         self.message = message
         super().__init__(self.message)
-
-
-class AccessControlError(Exception):
-    """Exception representing an access control violation."""
-
-    def __init__(self, message: str) -> None:
-        self.message = message
-        super().__init__(self.message)

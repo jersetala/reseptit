@@ -2,9 +2,8 @@
 """High level functions for interacting with comments."""
 
 from typing import Any
-from sqlite3 import IntegrityError
 import db
-from exceptions import UserInputError, AccessControlError
+from exceptions import UserInputError
 
 
 def get_comments(recipe_id: int) -> Any:
@@ -14,10 +13,7 @@ def get_comments(recipe_id: int) -> Any:
              FROM comments c, users u
              WHERE recipe_id = ?
              AND u.user_id = c.user_id"""
-    try:
-        return db.query(sql, [recipe_id])
-    except Exception as e:
-        raise UserInputError(f"Recipe ID {recipe_id} does not exist.") from e
+    return db.query(sql, [recipe_id])
 
 
 def get_comment(comment_id: int) -> Any:
@@ -27,10 +23,9 @@ def get_comment(comment_id: int) -> Any:
              FROM comments c, users u
              WHERE comment_id = ?
              AND u.user_id = c.user_id"""
-    try:
-        return db.query(sql, [comment_id])[0]
-    except Exception as e:
-        raise UserInputError(f"Comment ID {comment_id} does not exist.") from e
+    result = db.query(sql, [comment_id])
+
+    return result[0] if result else None
 
 
 def add_comment_vote(comment_id: int, user_id: int, vote_type: str) -> None:
@@ -50,10 +45,7 @@ def add_comment_vote(comment_id: int, user_id: int, vote_type: str) -> None:
                  vote_type = excluded.vote_type
              WHERE comment_votes.vote_type != excluded.vote_type"""
 
-    try:
-        db.execute(sql, [comment_id, user_id, vote_type])
-    except IntegrityError as e:
-        raise UserInputError("User already voted the recipe.") from e
+    db.execute(sql, [comment_id, user_id, vote_type])
 
 
 def add_comment(recipe_id: int, user_id: int, content: str) -> None:
@@ -62,39 +54,18 @@ def add_comment(recipe_id: int, user_id: int, content: str) -> None:
                 recipe_id, user_id, content, creation_date, last_modified, score
              )
              VALUES (?, ?, ?, datetime('now'), datetime('now'), 0)"""
-    try:
-        db.execute(sql, [recipe_id, user_id, content])
-    except Exception as e:
-        raise UserInputError("Failed making comment with empty content.") from e
+    db.execute(sql, [recipe_id, user_id, content])
 
 
-def delete_comment(comment_id: int, user_id: int) -> None:
+def delete_comment(comment_id: int) -> None:
     """Delete the specified comment."""
-    __verify_comment_owner(comment_id, user_id)
     sql = """DELETE FROM comments WHERE comment_id = ?"""
-    try:
-        db.execute(sql, [comment_id])
-    except Exception as e:
-        raise UserInputError(f"Comment ID {comment_id} does not exist.") from e
+    db.execute(sql, [comment_id])
 
 
-def edit_comment(comment_id: int, user_id: int, content: str) -> None:
+def edit_comment(comment_id: int, content: str) -> None:
     """Replace a specified comment with a new one."""
-    __verify_comment_owner(comment_id, user_id)
     sql = """UPDATE comments
              SET content = ?
              WHERE comment_id = ?"""
-    try:
-        db.execute(sql, [content, comment_id, user_id])
-    except Exception as e:
-        raise UserInputError(
-            f'Failed editing comment {comment_id} with content "{content}".'
-        ) from e
-
-
-def __verify_comment_owner(comment_id: int, user_id: int) -> None:
-    """Verifies that the comment is owned by the given user."""
-    sql = """SELECT user_id FROM comments where comment_id = ?"""
-    comment_author = db.query(sql, [comment_id])[0][0]
-    if user_id != comment_author:
-        raise AccessControlError("Comment is not owned by user.")
+    db.execute(sql, [content, comment_id])

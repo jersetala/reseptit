@@ -2,9 +2,8 @@
 """High level functions for interacting with recipes."""
 
 from typing import Any, cast
-from sqlite3 import IntegrityError
 import db
-from exceptions import UserInputError, AccessControlError
+from exceptions import UserInputError
 
 
 def get_all_categories() -> Any:
@@ -18,17 +17,6 @@ def get_all_categories() -> Any:
     return cast(dict[str, str], categories)
 
 
-def __get_all_diets() -> Any:
-    """Get list of all diets specified in the database."""
-    sql = """SELECT diet_name, diet_title FROM diets"""
-    res = db.query(sql)
-    diets = {}
-    for name, title in res:
-        diets[name] = title
-
-    return cast(dict[str, str], diets)
-
-
 def get_recipe_categories(recipe_id: int) -> Any:
     """Get a list of category names related to a specified recipe."""
     sql = """SELECT c.category_name
@@ -37,7 +25,6 @@ def get_recipe_categories(recipe_id: int) -> Any:
                  ON a.category_id = c.category_id
              WHERE a.recipe_id = ?
              ORDER BY c.category_title"""
-
     return db.query(sql, [recipe_id])
 
 
@@ -59,22 +46,15 @@ def add_recipe(content: str, title: str, user_id: int, categories: list[str]) ->
     con = db.get_connection()
     # Only include unique categories.
     categories = list(set(categories))
-    try:
-        with con:
-            cursor = con.cursor()
-            cursor.execute(sql_add_recipe, (user_id, title, content))
-            recipe_id = cursor.lastrowid
+    with con:
+        cursor = con.cursor()
+        cursor.execute(sql_add_recipe, (user_id, title, content))
+        recipe_id = cursor.lastrowid
 
-            for category in categories:
-                if category not in all_categories:
-                    continue
-                cursor.execute(sql_add_category, (recipe_id, category))
-    except Exception as e:
-        if content is None or content == "":
-            raise UserInputError("Failed creating recipe with empty content.") from e
-        if title is None or title == "":
-            raise UserInputError("Failed creating recipe with empty title.") from e
-        raise UserInputError("Failed creating recipe.") from e
+        for category in categories:
+            if category not in all_categories:
+                continue
+            cursor.execute(sql_add_category, (recipe_id, category))
 
 
 def get_all_recipes() -> Any:
@@ -99,24 +79,22 @@ def get_recipe(recipe_id: int) -> tuple[Any, Any]:
              WHERE r.user_id = u.user_id
              AND r.recipe_id = ?"""
 
-    try:
-        recipe = db.query(sql, [recipe_id])[0]
-    except Exception as e:
-        raise UserInputError(f"Recipe ID {recipe_id} does not exist.") from e
+    result = db.query(sql, [recipe_id])
 
-    categories = get_recipe_categories(recipe["recipe_id"])
+    if result:
+        recipe = result[0]
+        categories = get_recipe_categories(recipe["recipe_id"])
+    else:
+        categories = []
+        recipe = None
 
     return (recipe, categories)
 
 
-def delete_recipe(recipe_id: int, user_id: int) -> None:
+def delete_recipe(recipe_id: int) -> None:
     """Delete the specified recipe."""
-    __verify_recipe_owner(recipe_id, user_id)
     sql = """DELETE FROM recipes WHERE recipe_id = ?"""
-    try:
-        db.execute(sql, [recipe_id])
-    except Exception as e:
-        raise UserInputError(f"Recipe ID {recipe_id} does not exist.") from e
+    db.execute(sql, [recipe_id])
 
 
 def add_recipe_vote(recipe_id: int, user_id: int, vote_type: str) -> None:
@@ -132,17 +110,13 @@ def add_recipe_vote(recipe_id: int, user_id: int, vote_type: str) -> None:
                  vote_type = excluded.vote_type
              WHERE recipe_votes.vote_type != excluded.vote_type"""
 
-    try:
-        db.execute(sql, [recipe_id, user_id, vote_type])
-    except IntegrityError as e:
-        raise UserInputError("User already voted recipe.") from e
+    db.execute(sql, [recipe_id, user_id, vote_type])
 
 
 def edit_recipe(
-    recipe_id: int, user_id: int, content: str, title: str, categories: list[str]
+    recipe_id: int, content: str, title: str, categories: list[str]
 ) -> None:
     """Replace a specified recipe with a new one."""
-    __verify_recipe_owner(recipe_id, user_id)
     sql_update_recipe = """UPDATE recipes
                         SET content = ?, title = ?, last_modified = datetime('now')
                         WHERE recipe_id = ?"""
@@ -157,23 +131,15 @@ def edit_recipe(
     all_categories = get_all_categories()
     con = db.get_connection()
     categories = list(set(categories))
-    try:
-        with con:
-            cursor = con.cursor()
-            cursor.execute(sql_update_recipe, (content, title, recipe_id))
-            cursor.execute(sql_delete_categories, (recipe_id,))
+    with con:
+        cursor = con.cursor()
+        cursor.execute(sql_update_recipe, (content, title, recipe_id))
+        cursor.execute(sql_delete_categories, (recipe_id,))
 
-            for category in categories:
-                if category not in all_categories:
-                    continue
-                cursor.execute(sql_add_category, (recipe_id, category))
-
-    except Exception as e:
-        if content is None or content == "":
-            raise UserInputError("Failed editing recipe with empty content.") from e
-        if title is None or title == "":
-            raise UserInputError("Failed editing recipe with empty title.") from e
-        raise UserInputError("Failed editing recipe.") from e
+        for category in categories:
+            if category not in all_categories:
+                continue
+            cursor.execute(sql_add_category, (recipe_id, category))
 
 
 def search_recipe(query: str, categories: list[str]) -> Any:
@@ -200,11 +166,3 @@ def search_recipe(query: str, categories: list[str]) -> Any:
     for recipe in recipes:
         cats.append(get_recipe_categories(recipe["recipe_id"]))
     return (recipes, cats)
-
-
-def __verify_recipe_owner(recipe_id: int, user_id: int) -> None:
-    """Verifies that the recipe is owned by the given user."""
-    sql = """SELECT user_id FROM recipes WHERE recipe_id = ?"""
-    recipe_author = db.query(sql, [recipe_id])[0][0]
-    if user_id != recipe_author:
-        raise AccessControlError("Recipe is not owned by user.")

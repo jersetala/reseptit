@@ -13,7 +13,7 @@ import comments
 import db
 import recipes
 from config import SECRET_KEY
-from exceptions import AccessControlError, UserInputError
+from exceptions import UserInputError
 from recipes import get_all_categories, get_all_recipes
 from users import check_login, create_user
 
@@ -69,6 +69,8 @@ def index() -> str:
 def show_recipe(recipe_id: int) -> str:
     "Return detailed information about a recipe."
     recipe, categories = recipes.get_recipe(recipe_id)
+    if not recipe:
+        flash("FAILUREL: No such recipe found!")
     comment_list = comments.get_comments(recipe_id)
     return render_template(
         "recipe.html",
@@ -85,11 +87,21 @@ def register() -> ResponseReturnValue:
     If accessed with POST, do the database operation to register."""
     if request.method == "GET":
         return render_template("register.html")
-    username = escape(request.form["username"])
-    password1 = escape(request.form["password1"])
+    username = request.form["username"]
+    password1 = request.form["password1"]
     password2 = request.form["password2"]
     if password1 != password2:
         flash("FAILURE: Passwords do not match!")
+        return redirect("/register")
+
+    username = username.strip()
+
+    if len(username) > 32:
+        flash("FAILURE: Username is too long!")
+        return redirect("/register")
+
+    if len(username) < 4:
+        flash("FAILURE: Username is too short!")
         return redirect("/register")
 
     try:
@@ -124,10 +136,16 @@ def login() -> ResponseReturnValue:
 @require_login
 def create_recipe() -> ResponseReturnValue:
     """Takes a form and creates a recipe from the form."""
-    content = escape(request.form["content"])
-    title = escape(request.form["title"])
+    content = escape(request.form["content"]).strip()
+    title = escape(request.form["title"]).strip()
     user_id = get_user_id()
     categories = request.form.getlist("categories[]")
+
+    if len(title) < 4:
+        flash("FAILURE: Title is too short!")
+
+    if len(content) < 4:
+        flash("FAILURE: Content is too short!")
 
     recipes.add_recipe(content, title, user_id, categories)
     flash("SUCCESS: Recipe created!")
@@ -150,8 +168,13 @@ def new_comment() -> ResponseReturnValue:
         recipe_id = int(request.form["recipe_id"])
     except ValueError:
         flash("ERROR: Invalid recipe ID.")
-        return redirect("/")
-    content = escape(request.form["content"])
+        return redirect(request.referrer or "/")
+    recipe, _ = recipes.get_recipe(recipe_id)
+    if not recipe:
+        flash("ERROR: Invalid recipe ID.")
+        return redirect(request.referrer or "/")
+
+    content = request.form["content"]
     user_id = get_user_id()
 
     comments.add_comment(recipe_id, user_id, content)
@@ -163,13 +186,16 @@ def new_comment() -> ResponseReturnValue:
 def delete_comment(comment_id: int) -> ResponseReturnValue:
     """Delete the given comment."""
     user_id = get_user_id()
-    try:
-        comments.delete_comment(comment_id, user_id)
-    except AccessControlError:
-        flash("FAILURE: No access.")
-    except UserInputError as e:
-        flash(f"FAILURE: Failed to remove comment with error '{e.message}'!")
-        return redirect("/")
+    comment = comments.get_comment(comment_id)
+
+    if not comment:
+        flash("FAILURE: No such comment!")
+        return redirect(request.referrer or "/")
+    if user_id != comment["user_id"]:
+        flash("FAILURE: No access!")
+        return redirect(request.referrer or "/")
+
+    comments.delete_comment(comment_id)
     return redirect(request.referrer or "/")
 
 
@@ -179,11 +205,7 @@ def vote_comment(comment_id: int) -> ResponseReturnValue:
     """Either upvote or downvote the given comment according to a form."""
     vote_type = request.form["vote"]
     user_id = get_user_id()
-    try:
-        comments.add_comment_vote(comment_id, user_id, vote_type)
-    except UserInputError as e:
-        flash(f"FAILURE: Failed to vote with error '{e.message}'.")
-        return redirect(request.referrer or "/")
+    comments.add_comment_vote(comment_id, user_id, vote_type)
 
     return redirect(request.referrer or "/")
 
@@ -193,14 +215,14 @@ def vote_comment(comment_id: int) -> ResponseReturnValue:
 def delete_recipe(recipe_id: int) -> ResponseReturnValue:
     """Delete the given recipe."""
     user_id = get_user_id()
-    try:
-        recipes.delete_recipe(recipe_id, user_id)
-    except AccessControlError:
-        flash("FAILURE: No access.")
-        return redirect(request.referrer or "/")
-    except UserInputError:
-        flash("Failure: No such recipe found.")
+    recipe, _ = recipes.get_recipe(recipe_id)
+    if not recipe:
+        flash("FAILURE: No such recipe found!")
+    if user_id != recipe["user_id"]:
+        flash("FAILURE: No accesss!")
+        return redirect(request.referrer)
 
+    recipes.delete_recipe(recipe_id)
     flash("SUCCESS: Recipe deleted.")
     return redirect("/")
 
@@ -213,12 +235,8 @@ def vote_recipe(recipe_id: int) -> ResponseReturnValue:
     user_id = get_user_id()
     try:
         recipes.add_recipe_vote(recipe_id, user_id, vote_type)
-    except AccessControlError:
-        flash("FAILURE: No access.")
     except UserInputError:
-        flash("FAILURE: Failed to vote.")
-        return redirect(request.referrer or "/")
-
+        flash(f"FAILURE: No such vote type {vote_type}!")
     return redirect(request.referrer or "/")
 
 
@@ -228,17 +246,24 @@ def edit_comment(comment_id: int) -> ResponseReturnValue:
     """If the request method is GET, render a form for editing a comment.
     If the method is POST replace the given comment by a new one given by the form."""
     comment = comments.get_comment(comment_id)
-    if request.method == "GET":
-        return render_template("edit_comment.html", comment=comment)
-    user_id = get_user_id()
-    content = request.form["content"]
-    try:
-        comments.edit_comment(comment_id, user_id, content)
-    except AccessControlError:
-        flash("FAILURE: No access.")
-    except UserInputError:
-        flash("FAILURE: Failed to edit comment!")
+    if comment is None:
+        flash("FAILURE: No such comment!")
+        return redirect(request.referrer or "/")
 
+    user_id = get_user_id()
+    if request.method == "GET":
+        if user_id != comment["user_id"]:
+            flash("FAILURE: No access!")
+            return redirect(request.referrer or "/")
+        return render_template("edit_comment.html", comment=comment)
+
+    content = request.form["content"].strip()
+
+    if content == "":
+        flash("FAILURE: Comment is empty!")
+        return redirect(request.referrer or "/")
+
+    comments.edit_comment(comment_id, content)
     comment_recipe = comment["recipe_id"]
     return redirect(f"/recipe/{comment_recipe}")
 
@@ -250,6 +275,16 @@ def edit_recipe(recipe_id: int) -> ResponseReturnValue:
     If the method is POST replace the given recipe by a new one given by the form."""
 
     recipe, categories = recipes.get_recipe(recipe_id)
+    user_id = get_user_id()
+
+    if not recipe:
+        flash("FAILURE: No such recipe!")
+        return redirect(request.referrer or "/")
+
+    if user_id != recipe["user_id"]:
+        flash("FAILURE: No access!")
+        return redirect(request.referrer or "/")
+
     if request.method == "GET":
         return render_template(
             "edit_recipe.html",
@@ -257,16 +292,15 @@ def edit_recipe(recipe_id: int) -> ResponseReturnValue:
             recipe_categories=categories,
             all_categories=recipes.get_all_categories(),
         )
-    user_id = get_user_id()
-    content = request.form["content"]
-    title = request.form["title"]
+
+    content = request.form["content"].strip()
+    title = request.form["title"].strip()
+    if len(title) < 4:
+        flash("FAILURE: Title is too short!")
+    if len(content) < 4:
+        flash("FAILURE: Content is too short!")
     categories = request.form.getlist("categories[]")
-    try:
-        recipes.edit_recipe(recipe_id, user_id, content, title, categories)
-    except AccessControlError:
-        flash("FAILURE: No access.")
-    except UserInputError:
-        flash("FAILURE: Failed to edit comment!")
+    recipes.edit_recipe(recipe_id, content, title, categories)
 
     return redirect(f"/recipe/{recipe_id}")
 
