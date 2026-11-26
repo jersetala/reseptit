@@ -25,8 +25,6 @@ from users import (
     update_user_bio,
 )
 
-MAX_BIO_LENGTH = 500
-
 app = Flask(__name__)
 app.secret_key = SECRET_KEY
 
@@ -203,8 +201,8 @@ def edit_bio() -> ResponseReturnValue:
     check_csrf()
     user_id = get_user_id()
     bio = request.form.get("bio", "")
-    if len(bio) > MAX_BIO_LENGTH:
-        flash(f"FAILURE: Bio must be {MAX_BIO_LENGTH} characters or fewer!")
+    if len(bio) > 500:
+        flash("FAILURE: Bio must be 500 characters or fewer!")
         return redirect(f"/user/{user_id}")
 
     update_user_bio(user_id, bio.strip())
@@ -398,7 +396,6 @@ def display_user(target_user_id: int) -> str:
         "user.html",
         username=username,
         bio=bio,
-        bio_max_length=MAX_BIO_LENGTH,
         total_score=total_score,
         post_count=post_count,
         recipes=recipes_,

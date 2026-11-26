@@ -12,7 +12,7 @@
 
     {% if user_id == target_user_id %}
         <form action="/edit_bio" method="post">
-            <label for="bio">Bio (max {{ bio_max_length }} characters):</label>
+            <label for="bio">Bio (max 500 characters):</label>
             <input
                 type="text"
                 id="bio"
