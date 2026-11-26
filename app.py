@@ -9,15 +9,18 @@ from flask import Flask, abort, flash, redirect, render_template, request, sessi
 from flask.typing import ResponseReturnValue
 from markupsafe import escape
 
+import comments
 import db
 import recipes
-import comments
 from config import SECRET_KEY
 from exceptions import AccessControlError, UserInputError
+from recipes import get_all_categories, get_all_recipes
 from users import check_login, create_user
 
 app = Flask(__name__)
 app.secret_key = SECRET_KEY
+
+app.jinja_env.filters["zip"] = zip
 
 # Test if database exists.
 try:
@@ -48,15 +51,23 @@ def require_login(f: Callable[..., Any]) -> Callable[..., Any]:
 @app.route("/")
 def index() -> str:
     """Return the index of the webapp."""
-    return render_template("index.html", recipes=recipes.get_all_recipes())
+    recipes_, categories = get_all_recipes()
+    return render_template(
+        "index.html",
+        recipes=recipes_,
+        all_categories=get_all_categories(),
+        categories=categories,
+    )
 
 
 @app.route("/recipe/<int:recipe_id>")
 def show_recipe(recipe_id: int) -> str:
     "Return detailed information about a recipe."
-    recipe = recipes.get_recipe(recipe_id)
+    recipe, categories = recipes.get_recipe(recipe_id)
     comment_list = comments.get_comments(recipe_id)
-    return render_template("recipe.html", recipe=recipe, comments=comment_list)
+    return render_template(
+        "recipe.html", recipe=recipe, comments=comment_list, categories=categories
+    )
 
 
 @app.route("/register", methods=["GET", "POST"])
@@ -107,8 +118,9 @@ def create_recipe() -> ResponseReturnValue:
     content = escape(request.form["content"])
     title = escape(request.form["title"])
     user_id = get_user_id()
+    categories = request.form.getlist("categories[]")
 
-    recipes.add_recipe(content, title, user_id)
+    recipes.add_recipe(content, title, user_id, categories)
     flash("SUCCESS: Recipe created!")
     return redirect("/")
 
@@ -228,9 +240,14 @@ def edit_recipe(recipe_id: int) -> ResponseReturnValue:
     """If the request method is GET, render a form for editing a recipe.
     If the method is POST replace the given recipe by a new one given by the form."""
 
-    recipe = recipes.get_recipe(recipe_id)
+    recipe, categories = recipes.get_recipe(recipe_id)
     if request.method == "GET":
-        return render_template("edit_recipe.html", recipe=recipe)
+        return render_template(
+            "edit_recipe.html",
+            recipe=recipe,
+            recipe_categories=categories,
+            all_categories=recipes.get_all_categories(),
+        )
     user_id = get_user_id()
     content = request.form["content"]
     title = request.form["title"]

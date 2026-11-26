@@ -1,5 +1,5 @@
 {% extends "layout.html" %}
 {% block body %}
     {% from "_recipe_form.html" import recipe_form %}
-    {{ recipe_form("/edit_recipe/" + recipe.recipe_id|string(), "Publish", recipe) }}
+    {{ recipe_form("/edit_recipe/" + recipe.recipe_id|string(), "Publish", recipe, categories=all_categories) }}
 {% endblock %}

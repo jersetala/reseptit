@@ -30,13 +30,13 @@
     <hr />
 
     {% from "_recipe_render.html" import display_recipe %}
-    {% for recipe in recipes %}
-        {{ display_recipe(recipe) }}
+    {% for recipe, cats in recipes|zip(categories) %}
+        {{ display_recipe(recipe, cats, all_categories) }}
     {% endfor %}
 
     {% if session.user_id %}
         <h2>New recipe</h2>
         {% from "_recipe_form.html" import recipe_form %}
-        {{ recipe_form("/create_recipe", "Create") }}
+        {{ recipe_form("/create_recipe", "Create", categories=all_categories) }}
     {% endif %}
 {% endblock %}

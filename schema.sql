@@ -27,19 +27,23 @@ CREATE TABLE IF NOT EXISTS recipes (
 
 CREATE TABLE IF NOT EXISTS diets (
        diet_id INTEGER PRIMARY KEY AUTOINCREMENT,
-       diet_name TEXT NOT NULL UNIQUE
+       diet_name TEXT NOT NULL UNIQUE,
+       diet_title TEXT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS recipe_categories (
        category_id INTEGER PRIMARY KEY AUTOINCREMENT,
-       category_name TEXT NOT NULL UNIQUE
+       category_name TEXT NOT NULL UNIQUE,
+       category_title TEXT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS recipe_category_assignments (
        recipe_id INTEGER NOT NULL,
        category_id INTEGER NOT NULL,
-       FOREIGN KEY (recipe_id) REFERENCES recipes(recipe_id),
-       FOREIGN KEY (category_id) REFERENCES recipe_categories(category_id),
+       FOREIGN KEY (recipe_id) REFERENCES recipes(recipe_id)
+           ON DELETE CASCADE,
+       FOREIGN KEY (category_id) REFERENCES recipe_categories(category_id)
+           ON DELETE CASCADE,
        UNIQUE (recipe_id, category_id)
 );
 

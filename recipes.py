@@ -1,18 +1,74 @@
 #!/usr/bin/env python3
 """High level functions for interacting with recipes."""
 
-from typing import Any
+from typing import Any, cast
 from sqlite3 import IntegrityError
 import db
 from exceptions import UserInputError, AccessControlError
 
 
-def add_recipe(content: str, title: str, user_id: int) -> None:
+def get_all_categories() -> Any:
+    """Get list of all categoris specified in the database."""
+    sql = """SELECT category_name, category_title FROM recipe_categories"""
+    res = db.query(sql)
+    categories = {}
+    for name, title in res:
+        categories[name] = title
+
+    return cast(dict[str, str], categories)
+
+
+def __get_all_diets() -> Any:
+    """Get list of all diets specified in the database."""
+    sql = """SELECT diet_name, diet_title FROM diets"""
+    res = db.query(sql)
+    diets = {}
+    for name, title in res:
+        diets[name] = title
+
+    return cast(dict[str, str], diets)
+
+
+def get_recipe_categories(recipe_id: int) -> Any:
+    """Get a list of category names related to a specified recipe."""
+    sql = """SELECT c.category_name
+             FROM recipe_categories AS c
+             JOIN recipe_category_assignments AS a
+                 ON a.category_id = c.category_id
+             WHERE a.recipe_id = ?
+             ORDER BY c.category_title"""
+
+    return db.query(sql, [recipe_id])
+
+
+def add_recipe(content: str, title: str, user_id: int, categories: list[str]) -> None:
     """Add a recipe to the database."""
-    sql = """INSERT INTO recipes (user_id, title, content, creation_date, last_modified, score)
-             VALUES (?, ?, ?, datetime('now'), datetime('now'), 0)"""
+    sql_add_recipe = """INSERT INTO recipes (
+                            user_id, title, content, creation_date, last_modified, score
+                        )
+                        VALUES (?, ?, ?, datetime('now'), datetime('now'), 0)"""
+    sql_add_category = """INSERT INTO recipe_category_assignments (recipe_id, category_id)
+                          SELECT ?, category_id
+                          FROM recipe_categories
+                          WHERE category_name = ?
+                          ON CONFLICT(recipe_id, category_id) DO NOTHING"""
+
+    all_categories = get_all_categories()
+    # This is impossible to do atomically without managing a transaction
+    # outside of functions provided by db.py or it would be very complicated.
+    con = db.get_connection()
+    # Only include unique categories.
+    categories = list(set(categories))
     try:
-        db.execute(sql, [user_id, title, content])
+        with con:
+            cursor = con.cursor()
+            cursor.execute(sql_add_recipe, (user_id, title, content))
+            recipe_id = cursor.lastrowid
+
+            for category in categories:
+                if category not in all_categories:
+                    continue
+                cursor.execute(sql_add_category, (recipe_id, category))
     except Exception as e:
         if content is None or content == "":
             raise UserInputError("Failed creating recipe with empty content.") from e
@@ -27,10 +83,15 @@ def get_all_recipes() -> Any:
              FROM recipes r, users u
              WHERE r.user_id = u.user_id
              ORDER BY r.creation_date"""
-    return db.query(sql)
+
+    recipes = db.query(sql)
+    categories = []
+    for recipe in recipes:
+        categories.append(get_recipe_categories(recipe["recipe_id"]))
+    return (recipes, categories)
 
 
-def get_recipe(recipe_id: int) -> Any:
+def get_recipe(recipe_id: int) -> tuple[Any, Any]:
     """Get recipe identified by the given recipe_id."""
     sql = """SELECT r.recipe_id, r.title, u.username, r.score, r.creation_date,
                 r.content, u.username, r.user_id
@@ -39,9 +100,13 @@ def get_recipe(recipe_id: int) -> Any:
              AND r.recipe_id = ?"""
 
     try:
-        return db.query(sql, [recipe_id])[0]
+        recipe = db.query(sql, [recipe_id])[0]
     except Exception as e:
         raise UserInputError(f"Recipe ID {recipe_id} does not exist.") from e
+
+    categories = get_recipe_categories(recipe["recipe_id"])
+
+    return (recipe, categories)
 
 
 def delete_recipe(recipe_id: int, user_id: int) -> None:

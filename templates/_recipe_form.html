@@ -1,4 +1,4 @@
-{% macro recipe_form(action, submit_text, recipe=none) %}
+{% macro recipe_form(action, submit_text, recipe=none, categories=none) %}
     <form method="post" action="{{  action }}">
         <p>
             <label for="title">Title:</label>
@@ -23,6 +23,16 @@
                 {{- recipe.content -}}
              {% endif %}</textarea>
         </p>
+        {% if categories is not none %}
+        <p>
+            <label for="categories">Categories:</label>
+            <select id="categories" name="categories[]" multiple>
+                {% for key in categories.keys() %}
+                    <option value="{{ key }}">{{ categories[key] }}</option>
+                {% endfor %}
+            </select>
+        </p>
+        {% endif %}
         <input type="hidden" name="recipe_id" value="{{ recipe.recipe_id }}">
         <button type="submit">
             {{ submit_text }}
