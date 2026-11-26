@@ -147,7 +147,8 @@ def search_recipe(query: str, categories: list[str]) -> Any:
     and contain at least one of the categories."""
     if categories:
         placeholders = ",".join("?" for _ in categories)
-        sql = f"""SELECT DISTINCT r.*
+        sql = f"""SELECT DISTINCT r.recipe_id, r.user_id, r.title, r.content,
+                              r.creation_date, r.last_modified, r.score
               FROM recipes AS r
               JOIN recipe_category_assignments AS a
                   ON a.recipe_id = r.recipe_id
@@ -158,7 +159,9 @@ def search_recipe(query: str, categories: list[str]) -> Any:
 
         recipes = db.query(sql, [*categories, "%" + query + "%"])
     else:
-        sql = """SELECT * FROM recipes AS r
+        sql = """SELECT r.recipe_id, r.user_id, r.title, r.content,
+                        r.creation_date, r.last_modified, r.score
+                 FROM recipes AS r
                  WHERE r.title LIKE ?"""
         recipes = db.query(sql, ["%" + query + "%"])
 
@@ -170,7 +173,9 @@ def search_recipe(query: str, categories: list[str]) -> Any:
 
 def get_user_recipes(user_id: int) -> Any:
     """Get all recipes authored by a specified user."""
-    sql = """SELECT * FROM recipes
+    sql = """SELECT recipe_id, user_id, title, content,
+                    creation_date, last_modified, score
+             FROM recipes
              WHERE user_id = ?"""
     result = db.query(sql, [user_id])
 
