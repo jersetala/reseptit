@@ -7,11 +7,11 @@
         <i>Score: {{ recipe.score }}</i>
     </p>
     {% if recipe_categories %}
-        <ol>
+        <ul>
             {% for category in recipe_categories %}
-                <li>{{ all_categories[category] }}</li>
+                <li>{{ all_categories[category[0]] }}</li>
             {% endfor %}
-        </ol>
+        </ul>
     {% endif %}
     {% if session.user_id %}
         <p>

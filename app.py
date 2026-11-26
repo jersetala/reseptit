@@ -66,7 +66,11 @@ def show_recipe(recipe_id: int) -> str:
     recipe, categories = recipes.get_recipe(recipe_id)
     comment_list = comments.get_comments(recipe_id)
     return render_template(
-        "recipe.html", recipe=recipe, comments=comment_list, categories=categories
+        "recipe.html",
+        recipe=recipe,
+        comments=comment_list,
+        recipe_categories=categories,
+        all_categories=get_all_categories(),
     )
 
 
