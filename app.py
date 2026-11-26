@@ -251,14 +251,15 @@ def edit_recipe(recipe_id: int) -> ResponseReturnValue:
     user_id = get_user_id()
     content = request.form["content"]
     title = request.form["title"]
+    categories = request.form.getlist("categories[]")
     try:
-        recipes.edit_recipe(recipe_id, user_id, content, title)
+        recipes.edit_recipe(recipe_id, user_id, content, title, categories)
     except AccessControlError:
         flash("FAILURE: No access.")
     except UserInputError:
         flash("FAILURE: Failed to edit comment!")
 
-    return redirect(request.referrer or f"/recipe/{recipe_id}")
+    return redirect(f"/recipe/{recipe_id}")
 
 
 @app.route("/search", methods=["GET"])
