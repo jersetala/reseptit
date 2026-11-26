@@ -22,6 +22,11 @@ def create_user(username: str, password: str) -> None:
         raise UserInputError("Failed creating user.") from e
 
 
+def delete_user(user_id: int) -> None:
+    """Delete the specified user."""
+    db.execute("DELETE FROM users WHERE user_id = ?", [user_id])
+
+
 def check_login(username: str, password: str) -> int | None:
     "Check whether a user has the given password. Returns the user_id if true."
     sql = "SELECT user_id, password_hash FROM users WHERE username = ?"

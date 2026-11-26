@@ -17,7 +17,7 @@ import recipes
 from config import SECRET_KEY
 from exceptions import UserInputError
 from recipes import get_all_categories, get_all_recipes
-from users import check_login, create_user
+from users import check_login, create_user, delete_user
 
 app = Flask(__name__)
 app.secret_key = SECRET_KEY
@@ -171,6 +171,20 @@ def create_recipe() -> ResponseReturnValue:
 def logout() -> ResponseReturnValue:
     """Clear the session."""
     session.clear()
+    return redirect("/")
+
+
+@app.route("/delete_account", methods=["GET", "POST"])
+@require_login
+def delete_account() -> ResponseReturnValue:
+    """Confirm account deletion, then delete the current user's account."""
+    if request.method == "GET":
+        return render_template("confirm_delete_account.html", user_id=get_user_id())
+
+    check_csrf()
+    delete_user(get_user_id())
+    session.clear()
+    flash("SUCCESS: Account deleted.")
     return redirect("/")
 
 
@@ -356,6 +370,7 @@ def display_user(target_user_id: int) -> str:
         all_categories=get_all_categories(),
         categories=categories,
         user_id=user_id,
+        target_user_id=target_user_id,
     )
 
 
