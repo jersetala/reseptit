@@ -3,7 +3,7 @@
 {% block body %}
     <h1>{{ recipe.title }}</h1>
     <p>
-        <b>{{ recipe.username }}</b>
+        <b><a href="/user/{{ recipe.user_id }}">{{ recipe.username }}</a></b>
         <i>Score: {{ recipe.score }}</i>
     </p>
     {% if recipe_categories %}
@@ -38,7 +38,8 @@
     <hr />
     {% for comment in comments %}
         <p>
-            <b>{{ comment.username }}</b> <i>({{ comment.creation_date }})</i>
+            <b><a href="/user/{{ comment.user_id }}">{{ comment.username }}</a></b>
+            <i>({{ comment.creation_date }})</i>
         </p>
         <p>
             {{ comment.content }}

@@ -23,7 +23,8 @@
             </form>
         {% else %}
             <p>
-                You have logged in as {{ session.username }}.
+                You have logged in as
+                <a href="/user/{{ session.user_id }}">{{ session.username }}</a>.
             <a href="/logout">Logout</a>
         {% endif %}
     </p>
