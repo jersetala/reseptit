@@ -27,6 +27,19 @@ def delete_user(user_id: int) -> None:
     db.execute("DELETE FROM users WHERE user_id = ?", [user_id])
 
 
+def get_user_profile(user_id: int) -> tuple[str, str] | None:
+    """Return the username and bio for a user, or None if they do not exist."""
+    result = db.query("SELECT username, bio FROM users WHERE user_id = ?", [user_id])
+    if not result:
+        return None
+    return result[0]["username"], result[0]["bio"]
+
+
+def update_user_bio(user_id: int, bio: str) -> None:
+    """Update the specified user's bio."""
+    db.execute("UPDATE users SET bio = ? WHERE user_id = ?", [bio, user_id])
+
+
 def check_login(username: str, password: str) -> int | None:
     "Check whether a user has the given password. Returns the user_id if true."
     sql = "SELECT user_id, password_hash FROM users WHERE username = ?"

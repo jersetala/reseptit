@@ -17,7 +17,15 @@ import recipes
 from config import SECRET_KEY
 from exceptions import UserInputError
 from recipes import get_all_categories, get_all_recipes
-from users import check_login, create_user, delete_user
+from users import (
+    check_login,
+    create_user,
+    delete_user,
+    get_user_profile,
+    update_user_bio,
+)
+
+MAX_BIO_LENGTH = 500
 
 app = Flask(__name__)
 app.secret_key = SECRET_KEY
@@ -186,6 +194,22 @@ def delete_account() -> ResponseReturnValue:
     session.clear()
     flash("SUCCESS: Account deleted.")
     return redirect("/")
+
+
+@app.route("/edit_bio", methods=["POST"])
+@require_login
+def edit_bio() -> ResponseReturnValue:
+    """Update the current user's bio."""
+    check_csrf()
+    user_id = get_user_id()
+    bio = request.form.get("bio", "")
+    if len(bio) > MAX_BIO_LENGTH:
+        flash(f"FAILURE: Bio must be {MAX_BIO_LENGTH} characters or fewer!")
+        return redirect(f"/user/{user_id}")
+
+    update_user_bio(user_id, bio.strip())
+    flash("SUCCESS: Bio updated.")
+    return redirect(f"/user/{user_id}")
 
 
 @app.route("/new_comment", methods=["POST"])
@@ -362,10 +386,18 @@ def search() -> str:
 @app.route("/user/<int:target_user_id>", methods=["GET"])
 def display_user(target_user_id: int) -> str:
     """Display user information."""
+    profile = get_user_profile(target_user_id)
+    if profile is None:
+        abort(404)
+    username, bio = profile
+
     user_id = session.get("user_id", None)
     recipes_, categories = recipes.get_user_recipes(target_user_id)
     return render_template(
         "user.html",
+        username=username,
+        bio=bio,
+        bio_max_length=MAX_BIO_LENGTH,
         recipes=recipes_,
         all_categories=get_all_categories(),
         categories=categories,

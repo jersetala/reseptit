@@ -6,7 +6,8 @@
 CREATE TABLE IF NOT EXISTS users (
        user_id INTEGER PRIMARY KEY AUTOINCREMENT,
        username TEXT NOT NULL UNIQUE,
-       password_hash TEXT NOT NULL
+       password_hash TEXT NOT NULL,
+       bio TEXT NOT NULL DEFAULT ''
 );
 
 CREATE TABLE IF NOT EXISTS recipes (
