@@ -297,8 +297,8 @@ def edit_recipe(recipe_id: int) -> ResponseReturnValue:
 
     content = request.form["content"].strip()
     title = request.form["title"].strip()
-    if len(title) < 4:
-        flash("FAILURE: Title is too short!")
+    if len(title) < 4 or len(title) > 200:
+        flash("FAILURE: Title must be between 4 and 200 characters long!")
     if len(content) < 4:
         flash("FAILURE: Content is too short!")
     categories = request.form.getlist("categories[]")

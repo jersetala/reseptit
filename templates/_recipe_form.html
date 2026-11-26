@@ -3,7 +3,11 @@
         <p>
             <label for="title">Title:</label>
             <input
-                type="text" name="title" required
+                type="text"
+                name="title"
+                required
+                minlength="4"
+                maxlength="200"
                 {% if recipe %}
                     class="test"
                     value="{{ recipe.title }}"
@@ -19,6 +23,7 @@
                 rows="5"
                 cols="40"
                 required
+                minlength="4"
             >{%- if recipe -%}
                 {{- recipe.content -}}
              {% endif %}</textarea>

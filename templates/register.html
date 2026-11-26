@@ -6,7 +6,7 @@
     <form action="/register" method="post">
         <p>
             <label for="username">Username:</label>
-            <input type="text" name="username" required />
+            <input type="text" name="username" required maxlength="32" minlength="4" novalidate />
         </p>
         <p>
             <label for="password1">Password:</label>
