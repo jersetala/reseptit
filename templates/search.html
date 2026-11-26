@@ -1,12 +1,37 @@
 {% extends "layout.html" %}
 {% block body %}
-    {% if recipes %}
-        <h1>Results</h1>
-        {% from "_recipe_render.html" import display_recipe %}
-        {% for recipe in recipes %}
-            {{ display_recipe(recipe) }}
-        {% endfor %}
-    {% else %}
-        <h1>No results :(</h1>
+    <form action="/search" method="get" role="search">
+        <label for="recipe-search">Search</label>
+        <input
+            type="search"
+            id="recipe-search"
+            name="q"
+            placeholder="Search..."
+        />
+        <label for="categories">Categories:</label>
+        <select id="categories" name="categories" multiple>
+            {% for key in all_categories %}
+                <option value="{{ key }}">{{ all_categories[key] }}</option>
+            {% endfor %}
+        </select>
+        <input
+            type="hidden"
+            id="have_searched"
+            name="have_searched"
+            value="1"
+        />
+        <button type="submit">Search</button>
+    </form>
+
+    {% if have_searched %}
+        {% if recipes %}
+            <h1>Results</h1>
+            {% from "_recipe_render.html" import display_recipe %}
+            {% for recipe, cats in recipes|zip(categories) %}
+                {{ display_recipe(recipe, cats, all_categories) }}
+            {% endfor %}
+        {% else %}
+            <h1>No results :(</h1>
+        {% endif %}
     {% endif %}
 {% endblock %}

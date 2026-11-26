@@ -167,6 +167,7 @@ def edit_recipe(
                 if category not in all_categories:
                     continue
                 cursor.execute(sql_add_category, (recipe_id, category))
+
     except Exception as e:
         if content is None or content == "":
             raise UserInputError("Failed editing recipe with empty content.") from e
@@ -175,13 +176,30 @@ def edit_recipe(
         raise UserInputError("Failed editing recipe.") from e
 
 
-def search_recipe(query: str) -> Any:
-    """Returns recipes matching the given search term."""
-    sql = """SELECT * FROM recipes
-             WHERE title LIKE ?"""
+def search_recipe(query: str, categories: list[str]) -> Any:
+    """Returns recipes that match the given search term
+    and contain at least one of the categories."""
+    if categories:
+        placeholders = ",".join("?" for _ in categories)
+        sql = f"""SELECT DISTINCT r.*
+              FROM recipes AS r
+              JOIN recipe_category_assignments AS a
+                  ON a.recipe_id = r.recipe_id
+              JOIN recipe_categories AS c
+                  ON c.category_id = a.category_id
+              WHERE c.category_name IN ({placeholders})
+                  AND r.title LIKE ?"""
 
-    # This looks wrong but does not lead to SQL injection.
-    return db.query(sql, ["%" + query + "%"])
+        recipes = db.query(sql, [*categories, "%" + query + "%"])
+    else:
+        sql = """SELECT * FROM recipes AS r
+                 WHERE r.title LIKE ?"""
+        recipes = db.query(sql, ["%" + query + "%"])
+
+    cats = []
+    for recipe in recipes:
+        cats.append(get_recipe_categories(recipe["recipe_id"]))
+    return (recipes, cats)
 
 
 def __verify_recipe_owner(recipe_id: int, user_id: int) -> None:

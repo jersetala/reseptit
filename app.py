@@ -275,9 +275,19 @@ def edit_recipe(recipe_id: int) -> ResponseReturnValue:
 def search() -> str:
     """Display search results for recipes with a query given by a request argument."""
     # will abort() if doesn't exist
-    query = request.args["q"]
-    results = recipes.search_recipe(query)
-    return render_template("search.html", recipes=results)
+    query = request.args.get("q", "")
+    categories = request.args.getlist("categories")
+    recipes_, categories_ = recipes.search_recipe(query, categories)
+    # This is just so we can show something if the search returns nothing.
+    have_searched = request.args.get("have_searched") is not None
+
+    return render_template(
+        "search.html",
+        recipes=recipes_,
+        all_categories=get_all_categories(),
+        categories=categories_,
+        have_searched=have_searched,
+    )
 
 
 def get_user_id() -> int:

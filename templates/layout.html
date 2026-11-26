@@ -10,18 +10,7 @@
         <nav>
             <ul>
                 <li><a href="/">Reseptit</a></li>
-                <li>
-                    <form action="/search" method="get" role="search">
-                        <label for="recipe-search">Search</label>
-                        <input
-                            type="search"
-                            id="recipe-search"
-                            name="q"
-                            placeholder="Search..."
-                        />
-                        <button type="submit">Search</button>
-                    </form>
-                </li>
+                <li><a href="/search">Search</a></li>
             </ul>
         </nav>
         {% with messages = get_flashed_messages() %}
