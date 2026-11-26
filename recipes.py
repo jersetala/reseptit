@@ -166,3 +166,21 @@ def search_recipe(query: str, categories: list[str]) -> Any:
     for recipe in recipes:
         cats.append(get_recipe_categories(recipe["recipe_id"]))
     return (recipes, cats)
+
+
+def get_user_recipes(user_id: int) -> Any:
+    """Get all recipes authored by a specified user."""
+    sql = """SELECT * FROM recipes
+             WHERE user_id = ?"""
+    result = db.query(sql, [user_id])
+
+    if result:
+        recipes = result
+        categories = []
+        for recipe in recipes:
+            categories.append(get_recipe_categories(recipe["recipe_id"]))
+    else:
+        recipes = []
+        categories = []
+
+    return (recipes, categories)

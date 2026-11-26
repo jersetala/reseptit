@@ -1,0 +1,14 @@
+{% extends "layout.html" %}
+{% block title %}{{ session.username }}{% endblock %}
+
+{% block body %}
+    <h1>{{ session.username }}</h1>
+
+    <hr />
+
+    {% from "_recipe_render.html" import display_recipe %}
+    {% for recipe, cats in recipes|zip(categories) %}
+        {{ display_recipe(recipe, cats, all_categories) }}
+    {% endfor %}
+
+{% endblock %}

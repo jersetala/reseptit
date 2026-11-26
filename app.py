@@ -345,6 +345,20 @@ def search() -> str:
     )
 
 
+@app.route("/user/<int:target_user_id>", methods=["GET"])
+def display_user(target_user_id: int) -> str:
+    """Display user information."""
+    user_id = session.get("user_id", None)
+    recipes_, categories = recipes.get_user_recipes(target_user_id)
+    return render_template(
+        "user.html",
+        recipes=recipes_,
+        all_categories=get_all_categories(),
+        categories=categories,
+        user_id=user_id,
+    )
+
+
 def get_user_id() -> int:
     """Return the current user id from the session."""
     user_id = session.get("user_id")
