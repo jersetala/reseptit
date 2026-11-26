@@ -143,9 +143,11 @@ def create_recipe() -> ResponseReturnValue:
 
     if len(title) < 4:
         flash("FAILURE: Title is too short!")
+        return redirect("/")
 
     if len(content) < 4:
         flash("FAILURE: Content is too short!")
+        return redirect("/")
 
     recipes.add_recipe(content, title, user_id, categories)
     flash("SUCCESS: Recipe created!")
