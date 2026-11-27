@@ -1,6 +1,6 @@
 {% macro recipe_form(action, submit_text, recipe=none, categories=none) %}
-    <form method="post" action="{{  action }}">
-        <p>
+    <form class="recipe-form" method="post" action="{{  action }}">
+        <p class="form-field recipe-form__title">
             <label for="title">Title:</label>
             <input
                 type="text"
@@ -9,14 +9,14 @@
                 minlength="4"
                 maxlength="200"
                 {% if recipe %}
-                    class="test"
+                    class="recipe-form__title-input{% if recipe %} test{% endif %}"
                     value="{{ recipe.title }}"
                 {% else %}
                     value=""
                 {% endif %}
             />
         </p>
-        <p>
+        <p class="form-field recipe-form__content">
             <label for="content">Content:</label>
             <textarea
                 name="content"
@@ -29,7 +29,7 @@
              {% endif %}</textarea>
         </p>
         {% if categories is not none %}
-        <p>
+        <p class="form-field recipe-form__categories">
             <label for="categories">Categories:</label>
             <select id="categories" name="categories[]" multiple>
                 {% for key in categories.keys() %}
@@ -40,7 +40,7 @@
         {% endif %}
         <input type="hidden" name="recipe_id" value="{{ recipe.recipe_id }}">
         <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
-        <button type="submit">
+        <button class="recipe-form__submit" type="submit">
             {{ submit_text }}
         </button>
     </form>

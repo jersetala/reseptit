@@ -1,9 +1,11 @@
 {% macro comment_form(action, submit_text, recipe_id, content='') %}
-    <form method="post" action="{{ action }}">
-        <textarea name="content" required rows="5" cols="40">{{ content }}</textarea>
+    <form class="comment-form" method="post" action="{{ action }}">
+        <div class="form-field comment-form__content">
+            <textarea name="content" required rows="5" cols="40">{{ content }}</textarea>
+        </div>
         <input type="hidden" name="recipe_id" value="{{ recipe_id }}">
         <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
-        <button type="submit">
+        <button class="comment-form__submit" type="submit">
             {{ submit_text }}
         </button>
     </form>

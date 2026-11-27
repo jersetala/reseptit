@@ -1,15 +1,21 @@
 {% macro display_recipe(recipe, recipe_categories, all_categories) %}
-    <p>
-        <a href="/recipe/{{ recipe.recipe_id }}">{{ recipe.title }}</a>
+    <article class="recipe recipe-card">
+        <a class="recipe-card__title" href="/recipe/{{ recipe.recipe_id }}">{{ recipe.title }}</a>
         {% if recipe_categories %}
-            <ul>
+        <div class="recipe_categories recipe-card__categories">
+            <ul class="recipe-card__category-list">
             {% for category in recipe_categories %}
                 <li>{{ all_categories[category[0]] }}</li>
             {% endfor %}
             </ul>
+        </div>
         {% endif %}
         <br />
-        Score: {{ recipe.score }}, created on {{ recipe.creation_date }}
-    </p>
-    <hr />
+        <div class="recipe_score recipe-card__score">
+            Score: {{ recipe.score }}
+        </div>
+        <div class="recipe_creation_date recipe-card__date">
+            created on {{ recipe.creation_date }}
+        </div>
+    </article>
 {% endmacro %}
