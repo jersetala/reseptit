@@ -1,26 +1,28 @@
 {% extends "layout.html" %}
 {% block title %}Register{% endblock %}
 {% block body %}
-    <h1>Register</h1>
+    <div class="page page--register">
+        <header class="page-header">
+            <h1>Register</h1>
+        </header>
 
-    <form action="/register" method="post">
-        <p>
-            <label for="username">Username:</label>
-            <input type="text" name="username" required maxlength="32" minlength="4" />
-        </p>
-        <p>
-            <label for="password1">Password:</label>
-            <input type="password" name="password1" required />
-        </p>
-        <p>
-            <label for="password2">Verify password:</label>
-            <input type="password" name="password2" required>
-        </p>
-        <input type="submit" value="Register" />
-    </form>
-
-    <hr />
-    <p>
-        <a href = "/">Frontpage</a>
-    </p>
+        <section class="registration-panel">
+            <form class="registration-form" action="/register" method="post">
+                <p class="form-field">
+                    <label for="username">Username:</label>
+                    <input type="text" name="username" required maxlength="32" minlength="4" />
+                </p>
+                <p class="form-field">
+                    <label for="password1">Password:</label>
+                    <input type="password" name="password1" required />
+                </p>
+                <p class="form-field">
+                    <label for="password2">Verify password:</label>
+                    <input type="password" name="password2" required>
+                </p>
+                <input type="submit" value="Register" />
+            </form>
+            <a class="registration-panel__back-link" href="/">Frontpage</a>
+        </section>
+    </div>
 {% endblock %}

@@ -7,8 +7,8 @@
         {% endblock %}
     </head>
     <body>
-        <nav>
-            <ul>
+        <nav class="site-navigation">
+            <ul class="site-navigation__links">
                 <li><a href="/">Reseptit</a></li>
                 <li><a href="/search">Search</a></li>
                 {% if session.get("user_id") is not none %}
@@ -18,13 +18,15 @@
         </nav>
         {% with messages = get_flashed_messages() %}
             {% if messages %}
-                <ul class="flashes">
+                <ul class="flashes flash-messages">
                     {% for message in messages %}
                         <li>{{ message }}</li>
                     {% endfor %}
                 </ul>
             {% endif %}
         {% endwith %}
-        {% block body %}{% endblock %}
+        <main class="main-content">
+            {% block body %}{% endblock %}
+        </main>
     </body>
 </html>

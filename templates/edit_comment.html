@@ -1,6 +1,12 @@
 {% extends "layout.html" %}
 {% block body %}
-    <h2>Edit comment</h2>
-    {% from "_comment_form.html" import comment_form %}
-    {{ comment_form("/edit_comment/" + comment.comment_id | string(), "Publish edit", 0, comment.content) }}
+    <div class="page page--edit-comment">
+        <header class="page-header">
+            <h1>Edit comment</h1>
+        </header>
+        <section class="comment-edit-panel">
+            {% from "_comment_form.html" import comment_form %}
+            {{ comment_form("/edit_comment/" + comment.comment_id | string(), "Publish edit", 0, comment.content) }}
+        </section>
+    </div>
 {% endblock %}

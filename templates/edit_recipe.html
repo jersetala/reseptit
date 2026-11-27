@@ -1,5 +1,12 @@
 {% extends "layout.html" %}
 {% block body %}
-    {% from "_recipe_form.html" import recipe_form %}
-    {{ recipe_form("/edit_recipe/" + recipe.recipe_id|string(), "Publish", recipe, categories=all_categories) }}
+    <div class="page page--edit-recipe">
+        <header class="page-header">
+            <h1>Edit recipe</h1>
+        </header>
+        <section class="recipe-edit-panel">
+            {% from "_recipe_form.html" import recipe_form %}
+            {{ recipe_form("/edit_recipe/" + recipe.recipe_id|string(), "Publish", recipe, categories=all_categories) }}
+        </section>
+    </div>
 {% endblock %}

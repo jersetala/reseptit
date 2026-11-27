@@ -2,15 +2,20 @@
 {% block title %}Delete account{% endblock %}
 
 {% block body %}
-    <h1>Delete account?</h1>
-    <p>
-        Are you sure you want to delete {{ session.username }}'s account?
-        This will also delete all of your recipes and comments.
-    </p>
-
-    <form action="/delete_account" method="post">
-        <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
-        <button type="submit">Yes, delete my account</button>
-    </form>
-    <p><a href="/user/{{ user_id }}">Cancel</a></p>
+    <div class="page page--delete-account">
+        <header class="page-header">
+            <h1>Delete account?</h1>
+        </header>
+        <section class="confirmation-panel">
+            <p class="confirmation-panel__message">
+                Are you sure you want to delete {{ session.username }}'s account?
+                This will also delete all of your recipes and comments.
+            </p>
+            <form class="confirmation-panel__form" action="/delete_account" method="post">
+                <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
+                <button type="submit">Yes, delete my account</button>
+            </form>
+            <a class="confirmation-panel__cancel" href="/user/{{ user_id }}">Cancel</a>
+        </section>
+    </div>
 {% endblock %}
