@@ -478,3 +478,109 @@ h2 {
 .comment-card__content {
     margin-bottom: 0.75rem;
 }
+
+.user-profile__stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+.user-profile__stat {
+    margin: 0;
+    padding: 0.65rem 0.9rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-control);
+    background: var(--color-surface);
+    font-weight: 650;
+}
+
+.user-profile__bio-form {
+    max-width: 600px;
+}
+
+.user-profile__account-actions {
+    margin-top: 2rem;
+}
+
+.confirmation-panel__form {
+    margin-bottom: 1rem;
+}
+
+.confirmation-panel__form button {
+    border-color: var(--color-danger);
+    background: var(--color-danger);
+}
+
+.confirmation-panel__cancel {
+    display: inline-block;
+}
+
+.flash-messages {
+    width: min(100% - 2rem, 1100px);
+    margin: 1rem auto 0;
+    padding: 0.9rem 1.1rem 0.9rem 2.5rem;
+    border: 1px solid #e6c6a9;
+    border-radius: var(--radius-control);
+    background: #fff3e7;
+    color: #71401e;
+}
+
+@media (max-width: 600px) {
+    .site-navigation__inner {
+        width: 100%;
+        flex-wrap: wrap;
+        gap: 0;
+        padding: 0 0.5rem 0.5rem;
+    }
+
+    .site-navigation__links {
+        width: 100%;
+        gap: 0;
+        padding: 0 0.5rem;
+    }
+
+    .site-navigation__account {
+        width: 100%;
+        gap: 0.35rem;
+    }
+
+    .site-login-form {
+        flex: 1 1 auto;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+    }
+
+    .site-login-form button {
+        padding: 0.35rem 0.55rem;
+    }
+
+    .site-navigation__links a {
+        padding-right: 0.65rem;
+        padding-left: 0.65rem;
+        font-size: 0.92rem;
+    }
+
+    .main-content {
+        width: min(100% - 1.25rem, 1100px);
+        padding-top: 1.5rem;
+    }
+
+    .recipe-detail__actions,
+    .comment-card__actions {
+        align-items: stretch;
+    }
+
+    .recipe-detail__actions form,
+    .comment-card__actions form {
+        flex-wrap: wrap;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+    }
+}
