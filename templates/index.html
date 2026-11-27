@@ -5,39 +5,49 @@
 {% block title %}Reseptit{% endblock %}
 
 {% block body %}
-    <h1>Recipes</h1>
+    <div class="page page--home">
+        <header class="page-header">
+            <h1>Recipes</h1>
+        </header>
 
-    <p>
-        {% if not session.user_id %}
-            <a href="/register">Register</a>
-            <form action="/login" method="post">
-                <p>
-                    <label for="username">Username:</label>
-                    <input type="text" name="username" required />
+        <section class="account-panel">
+            {% if not session.user_id %}
+                <a class="account-panel__register-link" href="/register">Register</a>
+                <form class="login-form" action="/login" method="post">
+                    <p class="form-field">
+                        <label for="username">Username:</label>
+                        <input type="text" name="username" required />
+                    </p>
+                    <p class="form-field">
+                        <label for="password">Password:</label>
+                        <input type="password" name="password" required />
+                    </p>
+                    <input type="submit" value="Login" />
+                </form>
+            {% else %}
+                <p class="account-panel__status">
+                    You have logged in as
+                    <a href="/user/{{ session.user_id }}">{{ session.username }}</a>.
+                    <a href="/logout">Logout</a>
                 </p>
-                <p>
-                    <label for="password">Password:</label>
-                    <input type="password" name="password" required />
-                </p>
-                <input type="submit" value="Login" />
-            </form>
-        {% else %}
-            <p>
-                You have logged in as
-                <a href="/user/{{ session.user_id }}">{{ session.username }}</a>.
-            <a href="/logout">Logout</a>
+            {% endif %}
+        </section>
+
+        <section class="recipe-feed">
+            {% from "_recipe_render.html" import display_recipe %}
+            <div class="recipe_list">
+                {% for recipe, cats in recipes|zip(categories) %}
+                    {{ display_recipe(recipe, cats, all_categories) }}
+                {% endfor %}
+            </div>
+        </section>
+
+        {% if session.user_id %}
+            <section class="recipe-create">
+                <h2>New recipe</h2>
+                {% from "_recipe_form.html" import recipe_form %}
+                {{ recipe_form("/create_recipe", "Create", categories=all_categories) }}
+            </section>
         {% endif %}
-    </p>
-    <hr />
-
-    {% from "_recipe_render.html" import display_recipe %}
-    {% for recipe, cats in recipes|zip(categories) %}
-        {{ display_recipe(recipe, cats, all_categories) }}
-    {% endfor %}
-
-    {% if session.user_id %}
-        <h2>New recipe</h2>
-        {% from "_recipe_form.html" import recipe_form %}
-        {{ recipe_form("/create_recipe", "Create", categories=all_categories) }}
-    {% endif %}
+    </div>
 {% endblock %}

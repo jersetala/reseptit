@@ -1,75 +1,79 @@
 {% extends "layout.html" %}
 {% block title %}{{ recipe.title }}{% endblock %}
 {% block body %}
-    <h1>{{ recipe.title }}</h1>
-    <p>
-        <b><a href="/user/{{ recipe.user_id }}">{{ recipe.username }}</a></b>
-        <i>Score: {{ recipe.score }}</i>
-    </p>
-    {% if recipe_categories %}
-        <ul>
-            {% for category in recipe_categories %}
-                <li>{{ all_categories[category[0]] }}</li>
-            {% endfor %}
-        </ul>
-    {% endif %}
-    {% if session.user_id %}
-        <p>
-            {% if recipe.user_id == session.user_id %}
-                <a href="/edit_recipe/{{ recipe.recipe_id }}">Edit</a>
-                <form action="/delete_recipe/{{ recipe.recipe_id }}" method="post">
-                    <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
-                    <button name="delete">Delete</button>
-                </form>
+    <article class="page page--recipe recipe-detail">
+        <header class="recipe-detail__header">
+            <h1>{{ recipe.title }}</h1>
+            <p class="recipe-detail__byline">
+                <b><a href="/user/{{ recipe.user_id }}">{{ recipe.username }}</a></b>
+                <i class="recipe-detail__score">Score: {{ recipe.score }}</i>
+            </p>
+            {% if recipe_categories %}
+                <ul class="recipe-detail__categories">
+                    {% for category in recipe_categories %}
+                        <li>{{ all_categories[category[0]] }}</li>
+                    {% endfor %}
+                </ul>
             {% endif %}
-                <form action="/vote_recipe/{{ recipe.recipe_id }}" method="post">
-                    <button name="vote" value="upvote">Upvote</button>
-                    <button name="vote" value="downvote">Downvote</button>
-                    <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
-                </form>
-        </p>
-    {% endif %}
-
-    <h2>Content</h2>
-    <p>
-        {{ recipe.content }}
-    </p>
-
-    <hr />
-    {% for comment in comments %}
-        <p>
-            <b><a href="/user/{{ comment.user_id }}">{{ comment.username }}</a></b>
-            <i>({{ comment.creation_date }})</i>
-        </p>
-        <p>
-            {{ comment.content }}
-        </p>
-        <p>
-            <i>Score: {{ comment.score }}</i>
-        </p>
+        </header>
         {% if session.user_id %}
-            <p>
-                {% if comment.user_id == session.user_id %}
-                    <a href="/edit_comment/{{ comment.comment_id }}">Edit</a>
-                    <form action="/delete_comment/{{ comment.comment_id }}" method="post">
-                        <button name="delete">Delete</button>
+            <div class="recipe-detail__actions">
+                {% if recipe.user_id == session.user_id %}
+                    <a href="/edit_recipe/{{ recipe.recipe_id }}">Edit</a>
+                    <form class="recipe-detail__delete-form" action="/delete_recipe/{{ recipe.recipe_id }}" method="post">
                         <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
+                        <button name="delete">Delete</button>
                     </form>
                 {% endif %}
-                <form action="/vote_comment/{{ comment.comment_id }}" method="post">
+                <form class="recipe-detail__vote-form" action="/vote_recipe/{{ recipe.recipe_id }}" method="post">
                     <button name="vote" value="upvote">Upvote</button>
                     <button name="vote" value="downvote">Downvote</button>
                     <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
                 </form>
-            </p>
+            </div>
         {% endif %}
-        <hr />
-    {% endfor %}
 
-    {% if session.user_id %}
-        <h2>Make comment</h2>
-        {% from "_comment_form.html" import comment_form %}
-        {{ comment_form("/new_comment", "Send", recipe.recipe_id, '') }}
-        <hr />
-    {% endif %}
+        <section class="recipe-detail__content">
+            <h2>Content</h2>
+            <p>{{ recipe.content }}</p>
+        </section>
+
+        <section class="comments">
+            <h2>Comments</h2>
+            {% for comment in comments %}
+                <article class="comment-card">
+                    <header class="comment-card__header">
+                        <b><a href="/user/{{ comment.user_id }}">{{ comment.username }}</a></b>
+                        <i class="comment-card__date">({{ comment.creation_date }})</i>
+                    </header>
+                    <p class="comment-card__content">{{ comment.content }}</p>
+                    <p class="comment-card__score"><i>Score: {{ comment.score }}</i></p>
+                    {% if session.user_id %}
+                        <div class="comment-card__actions">
+                            {% if comment.user_id == session.user_id %}
+                                <a href="/edit_comment/{{ comment.comment_id }}">Edit</a>
+                                <form class="comment-card__delete-form" action="/delete_comment/{{ comment.comment_id }}" method="post">
+                                    <button name="delete">Delete</button>
+                                    <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
+                                </form>
+                            {% endif %}
+                            <form class="comment-card__vote-form" action="/vote_comment/{{ comment.comment_id }}" method="post">
+                                <button name="vote" value="upvote">Upvote</button>
+                                <button name="vote" value="downvote">Downvote</button>
+                                <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
+                            </form>
+                        </div>
+                    {% endif %}
+                </article>
+            {% endfor %}
+        </section>
+
+        {% if session.user_id %}
+            <section class="comment-create">
+                <h2>Make comment</h2>
+                {% from "_comment_form.html" import comment_form %}
+                {{ comment_form("/new_comment", "Send", recipe.recipe_id, '') }}
+            </section>
+        {% endif %}
+    </article>
 {% endblock %}

@@ -1,37 +1,45 @@
 {% extends "layout.html" %}
 {% block body %}
-    <form action="/search" method="get" role="search">
-        <label for="recipe-search">Search</label>
-        <input
-            type="search"
-            id="recipe-search"
-            name="q"
-            placeholder="Search..."
-        />
-        <label for="categories">Categories:</label>
-        <select id="categories" name="categories" multiple>
-            {% for key in all_categories %}
-                <option value="{{ key }}">{{ all_categories[key] }}</option>
-            {% endfor %}
-        </select>
-        <input
-            type="hidden"
-            id="have_searched"
-            name="have_searched"
-            value="1"
-        />
-        <button type="submit">Search</button>
-    </form>
+    <div class="page page--search">
+        <section class="search-panel">
+            <form class="search-form" action="/search" method="get" role="search">
+                <label for="recipe-search">Search</label>
+                <input
+                    type="search"
+                    id="recipe-search"
+                    name="q"
+                    placeholder="Search..."
+                />
+                <label for="categories">Categories:</label>
+                <select id="categories" name="categories" multiple>
+                    {% for key in all_categories %}
+                        <option value="{{ key }}">{{ all_categories[key] }}</option>
+                    {% endfor %}
+                </select>
+                <input
+                    type="hidden"
+                    id="have_searched"
+                    name="have_searched"
+                    value="1"
+                />
+                <button type="submit">Search</button>
+            </form>
+        </section>
 
-    {% if have_searched %}
-        {% if recipes %}
-            <h1>Results</h1>
-            {% from "_recipe_render.html" import display_recipe %}
-            {% for recipe, cats in recipes|zip(categories) %}
-                {{ display_recipe(recipe, cats, all_categories) }}
-            {% endfor %}
-        {% else %}
-            <h1>No results :(</h1>
+        {% if have_searched %}
+            <section class="search-results">
+                {% if recipes %}
+                    <h1>Results</h1>
+                    {% from "_recipe_render.html" import display_recipe %}
+                    <div class="recipe-list">
+                        {% for recipe, cats in recipes|zip(categories) %}
+                            {{ display_recipe(recipe, cats, all_categories) }}
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <h1>No results :(</h1>
+                {% endif %}
+            </section>
         {% endif %}
-    {% endif %}
+    </div>
 {% endblock %}
