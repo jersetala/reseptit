@@ -1,0 +1,318 @@
+:root {
+    color-scheme: light;
+    --color-ink: #26352f;
+    --color-muted: #66736c;
+    --color-paper: #fbfaf6;
+    --color-surface: #ffffff;
+    --color-surface-soft: #f1f3ed;
+    --color-border: #dce2d8;
+    --color-primary: #315d49;
+    --color-primary-hover: #244735;
+    --color-accent: #bb6448;
+    --color-danger: #a53d36;
+    --shadow-card: 0 8px 24px rgb(34 54 43 / 7%);
+    --radius-card: 14px;
+    --radius-control: 8px;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    min-width: 320px;
+    min-height: 100vh;
+    margin: 0;
+    background: var(--color-paper);
+    color: var(--color-ink);
+    line-height: 1.6;
+}
+
+a {
+    color: var(--color-primary);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.18em;
+}
+
+a:hover {
+    color: var(--color-primary-hover);
+}
+
+button,
+input,
+select,
+textarea {
+    font: inherit;
+}
+
+button,
+input[type="submit"] {
+    min-height: 2.7rem;
+    padding: 0.55rem 1rem;
+    border: 1px solid var(--color-primary);
+    border-radius: var(--radius-control);
+    background: var(--color-primary);
+    color: #fff;
+    cursor: pointer;
+    font-weight: 650;
+    transition: background-color 140ms ease, border-color 140ms ease, transform 140ms ease;
+}
+
+button:hover,
+input[type="submit"]:hover {
+    border-color: var(--color-primary-hover);
+    background: var(--color-primary-hover);
+}
+
+button:active,
+input[type="submit"]:active {
+    transform: translateY(1px);
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+a:focus-visible {
+    outline: 3px solid #d59a68;
+    outline-offset: 3px;
+}
+
+input[type="text"],
+input[type="password"],
+input[type="search"],
+select,
+textarea {
+    width: 100%;
+    min-height: 2.7rem;
+    padding: 0.65rem 0.75rem;
+    border: 1px solid #c8d1c7;
+    border-radius: var(--radius-control);
+    background: var(--color-surface);
+    color: var(--color-ink);
+}
+
+textarea {
+    min-height: 8rem;
+    resize: vertical;
+}
+
+select[multiple] {
+    min-height: 7rem;
+}
+
+label {
+    display: block;
+    margin-bottom: 0.35rem;
+    color: var(--color-ink);
+    font-size: 0.94rem;
+    font-weight: 650;
+}
+
+h1,
+h2,
+h3,
+p {
+    margin-top: 0;
+}
+
+h1,
+h2,
+h3 {
+    line-height: 1.2;
+}
+
+h1 {
+    margin-bottom: 1rem;
+    font-size: clamp(2rem, 5vw, 3rem);
+    letter-spacing: -0.035em;
+}
+
+h2 {
+    margin-bottom: 1rem;
+    font-size: clamp(1.35rem, 3vw, 1.75rem);
+    letter-spacing: -0.02em;
+}
+
+.site-navigation {
+    background: var(--color-primary);
+    color: #fff;
+}
+
+.site-navigation__inner {
+    display: flex;
+    width: min(100% - 2rem, 1100px);
+    min-height: 4rem;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin: 0 auto;
+}
+
+.site-navigation__links {
+    display: flex;
+    width: auto;
+    min-height: 4rem;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.site-navigation__links a {
+    display: inline-flex;
+    min-height: 2.6rem;
+    align-items: center;
+    padding: 0.45rem 0.85rem;
+    border-radius: 999px;
+    color: #fff;
+    font-weight: 650;
+    text-decoration: none;
+}
+
+.site-navigation__links li:first-child a {
+    font-size: 1.1rem;
+    letter-spacing: 0.01em;
+}
+
+.site-navigation__links a:hover,
+.site-navigation__links a:focus-visible {
+    background: rgb(255 255 255 / 14%);
+}
+
+.site-navigation__account {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.65rem;
+}
+
+.site-login-form {
+    display: grid;
+    grid-template-columns: minmax(7rem, 9rem) minmax(7rem, 9rem) auto;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.site-login-form input {
+    width: 100%;
+    min-width: 0;
+    min-height: 2.3rem;
+    padding: 0.4rem 0.6rem;
+    border-color: rgb(255 255 255 / 35%);
+    font-size: 0.88rem;
+}
+
+.site-login-form button {
+    min-height: 2.3rem;
+    padding: 0.35rem 0.75rem;
+    border-color: #fff;
+    background: transparent;
+    font-size: 0.88rem;
+}
+
+.site-login-form button:hover {
+    border-color: #fff;
+    background: rgb(255 255 255 / 14%);
+}
+
+.site-navigation__account-link,
+.site-navigation__account-status {
+    color: #fff;
+    font-size: 0.9rem;
+    white-space: nowrap;
+}
+
+.site-navigation__account-link {
+    padding: 0.35rem 0.5rem;
+}
+
+.site-navigation__account-status a {
+    color: #fff;
+    font-weight: 700;
+}
+
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    clip-path: inset(50%);
+}
+
+.main-content {
+    width: min(100% - 2rem, 1100px);
+    margin: 0 auto;
+    padding: clamp(1.5rem, 5vw, 3.75rem) 0 4rem;
+}
+
+.page {
+    max-width: 850px;
+    margin: 0 auto;
+}
+
+.page-header {
+    margin-bottom: 1.75rem;
+}
+
+.page--home,
+.page--search {
+    max-width: 950px;
+}
+
+.account-panel,
+.search-panel,
+.registration-panel,
+.confirmation-panel,
+.recipe-create,
+.recipe-edit-panel,
+.comment-edit-panel,
+.comment-create,
+.user-profile__bio-form {
+    margin-bottom: 2rem;
+    padding: clamp(1rem, 3vw, 1.5rem);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-card);
+    background: var(--color-surface);
+    box-shadow: var(--shadow-card);
+}
+
+.account-panel__register-link {
+    display: inline-block;
+    margin-bottom: 1rem;
+    font-weight: 650;
+}
+
+.account-panel__status {
+    margin: 0;
+}
+
+.login-form,
+.registration-form,
+.recipe-form,
+.comment-form,
+.user-profile__bio-form {
+    display: grid;
+    gap: 1rem;
+}
+
+.form-field {
+    margin: 0;
+}
+
+.recipe-form__content textarea,
+.comment-form__content textarea {
+    display: block;
+}
+
+.recipe-feed,
+.search-results,
+.user-profile__recipes {
+    margin-top: 2.5rem;
+}

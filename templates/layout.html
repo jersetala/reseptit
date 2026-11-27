@@ -2,19 +2,39 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8">
-        <title>{% block title %}Reseptit{% endblock %}</title>
+        <title>{% block title %}{% endblock %}</title>
         {% block head %}
         {% endblock %}
+        <link rel="stylesheet" href="/static/main.css">
     </head>
     <body>
         <nav class="site-navigation">
-            <ul class="site-navigation__links">
-                <li><a href="/">Reseptit</a></li>
-                <li><a href="/search">Search</a></li>
-                {% if session.get("user_id") is not none %}
-                    <li><a href="/user/{{ session.user_id }}">My page</a></li>
-                {% endif %}
-            </ul>
+            <div class="site-navigation__inner">
+                <ul class="site-navigation__links">
+                    <li><a href="/">Reseptit</a></li>
+                    <li><a href="/search">Search</a></li>
+                    {% if session.get("user_id") is not none %}
+                        <li><a href="/user/{{ session.user_id }}">My page</a></li>
+                    {% endif %}
+                </ul>
+                <div class="site-navigation__account">
+                    {% if session.get("user_id") is not none %}
+                        <span class="site-navigation__account-status">
+                            Signed in as <a href="/user/{{ session.user_id }}">{{ session.username }}</a>
+                        </span>
+                        <a class="site-navigation__account-link" href="/logout">Logout</a>
+                    {% else %}
+                        <form class="site-login-form" action="/login" method="post">
+                            <label class="visually-hidden" for="nav-username">Username</label>
+                            <input id="nav-username" type="text" name="username" placeholder="Username" autocomplete="username" required>
+                            <label class="visually-hidden" for="nav-password">Password</label>
+                            <input id="nav-password" type="password" name="password" placeholder="Password" autocomplete="current-password" required>
+                            <button type="submit">Login</button>
+                        </form>
+                        <a class="site-navigation__account-link" href="/register">Register</a>
+                    {% endif %}
+                </div>
+            </div>
         </nav>
         {% with messages = get_flashed_messages() %}
             {% if messages %}

@@ -10,29 +10,6 @@
             <h1>Recipes</h1>
         </header>
 
-        <section class="account-panel">
-            {% if not session.user_id %}
-                <a class="account-panel__register-link" href="/register">Register</a>
-                <form class="login-form" action="/login" method="post">
-                    <p class="form-field">
-                        <label for="username">Username:</label>
-                        <input type="text" name="username" required />
-                    </p>
-                    <p class="form-field">
-                        <label for="password">Password:</label>
-                        <input type="password" name="password" required />
-                    </p>
-                    <input type="submit" value="Login" />
-                </form>
-            {% else %}
-                <p class="account-panel__status">
-                    You have logged in as
-                    <a href="/user/{{ session.user_id }}">{{ session.username }}</a>.
-                    <a href="/logout">Logout</a>
-                </p>
-            {% endif %}
-        </section>
-
         <section class="recipe-feed">
             {% from "_recipe_render.html" import display_recipe %}
             <div class="recipe_list">
